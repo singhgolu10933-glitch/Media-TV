@@ -1,12 +1,25 @@
-package com.storytv.app
+ package com.storytv.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,24 +41,25 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoryTvApp() {
 
     val stories = listOf(
         Story(
-            "The Last Letter",
-            "Drama",
-            "A sample short-story series."
+            title = "The Last Letter",
+            category = "Drama",
+            description = "A mysterious letter changes everything."
         ),
         Story(
-            "Midnight Mystery",
-            "Mystery",
-            "A sample mystery series."
+            title = "Midnight Mystery",
+            category = "Mystery",
+            description = "A strange mystery begins at midnight."
         ),
         Story(
-            "Campus Days",
-            "Romance",
-            "A sample college story."
+            title = "Campus Days",
+            category = "Romance",
+            description = "A story about friendship, love and college life."
         )
     )
 
@@ -59,24 +73,32 @@ fun StoryTvApp() {
                     }
                 )
             }
-        ) { padding ->
+        ) { paddingValues ->
 
             LazyColumn(
                 modifier = Modifier
-                    .padding(padding)
+                    .padding(paddingValues)
                     .fillMaxSize(),
+
                 contentPadding = PaddingValues(16.dp),
+
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
 
                 item {
+
                     Text(
-                        "Featured Stories",
+                        text = "Featured Stories",
                         style = MaterialTheme.typography.headlineSmall
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
                     )
                 }
 
                 items(stories) { story ->
+
                     StoryCard(story)
                 }
             }
@@ -88,15 +110,17 @@ fun StoryTvApp() {
 fun StoryCard(story: Story) {
 
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
 
         Column(
-            modifier = Modifier.padding(18.dp)
+            modifier = Modifier
+                .padding(18.dp)
         ) {
 
             Text(
-                story.title,
+                text = story.title,
                 style = MaterialTheme.typography.titleLarge
             )
 
@@ -104,20 +128,27 @@ fun StoryCard(story: Story) {
                 modifier = Modifier.height(5.dp)
             )
 
-            Text(story.category)
+            Text(
+                text = story.category,
+                style = MaterialTheme.typography.labelLarge
+            )
 
             Spacer(
                 modifier = Modifier.height(8.dp)
             )
 
-            Text(story.description)
+            Text(
+                text = story.description
+            )
 
             Spacer(
                 modifier = Modifier.height(12.dp)
             )
 
             Button(
-                onClick = {}
+                onClick = {
+                    // Watch button action will be added later
+                }
             ) {
                 Text("Watch")
             }
