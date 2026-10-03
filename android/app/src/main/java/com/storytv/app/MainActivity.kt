@@ -1,5 +1,6 @@
 package com.storytv.app
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +46,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 
 data class MediaStory(
@@ -57,7 +63,8 @@ data class Episode(
     val number: Int,
     val title: String,
     val description: String,
-    val duration: String
+    val duration: String,
+    val videoUrl: String
 )
 
 private val Background = Color(0xFF07070A)
@@ -89,13 +96,22 @@ fun MediaTvApp() {
         mutableStateOf<MediaStory?>(null)
     }
 
+    var selectedEpisode by remember {
+        mutableStateOf<Episode?>(null)
+    }
+
     MaterialTheme {
 
         Scaffold(
             containerColor = Background,
 
             bottomBar = {
-                if (selectedStory == null) {
+
+                if (
+                    selectedStory == null &&
+                    selectedEpisode == null
+                ) {
+
                     MediaBottomNavigation(
                         selectedTab = selectedTab,
                         onTabSelected = {
@@ -107,42 +123,65 @@ fun MediaTvApp() {
 
         ) { paddingValues ->
 
-            if (selectedStory != null) {
+            when {
 
-                StoryDetailsScreen(
-                    story = selectedStory!!,
-                    modifier = Modifier
-                        .padding(paddingValues),
-                    onBack = {
-                        selectedStory = null
+                selectedEpisode != null -> {
+
+                    VideoPlayerScreen(
+                        episode = selectedEpisode!!,
+                        modifier = Modifier
+                            .padding(paddingValues),
+                        onBack = {
+                            selectedEpisode = null
+                        }
+                    )
+                }
+
+                selectedStory != null -> {
+
+                    StoryDetailsScreen(
+                        story = selectedStory!!,
+                        modifier = Modifier
+                            .padding(paddingValues),
+                        onBack = {
+                            selectedStory = null
+                        },
+                        onEpisodeClick = {
+                            selectedEpisode = it
+                        }
+                    )
+                }
+
+                else -> {
+
+                    when (selectedTab) {
+
+                        0 -> HomeScreen(
+                            modifier = Modifier
+                                .padding(paddingValues),
+                            onStoryClick = {
+                                selectedStory = it
+                            }
+                        )
+
+                        1 -> SearchScreen(
+                            modifier = Modifier
+                                .padding(paddingValues),
+                            onStoryClick = {
+                                selectedStory = it
+                            }
+                        )
+
+                        2 -> LibraryScreen(
+                            modifier = Modifier
+                                .padding(paddingValues)
+                        )
+
+                        3 -> ProfileScreen(
+                            modifier = Modifier
+                                .padding(paddingValues)
+                        )
                     }
-                )
-
-            } else {
-
-                when (selectedTab) {
-
-                    0 -> HomeScreen(
-                        modifier = Modifier.padding(paddingValues),
-                        onStoryClick = {
-                            selectedStory = it
-                        }
-                    )
-
-                    1 -> SearchScreen(
-                        modifier = Modifier.padding(paddingValues),
-                        onStoryClick = {
-                            selectedStory = it
-                        }
-                    )
-
-                    2 -> LibraryScreen(
-                        modifier = Modifier.padding(paddingValues)
-                    )
-
-                    3 -> ProfileScreen(
-                        modifier = Modifier.padding(paddingValues)
-                    )
                 }
             }
         }
@@ -157,59 +196,7 @@ fun HomeScreen(
     onStoryClick: (MediaStory) -> Unit
 ) {
 
-    val trending = listOf(
-        MediaStory(
-            "The Last Letter",
-            "Drama",
-            "https://placehold.co/600x900/24143d/ffffff?text=The+Last+Letter",
-            "A mysterious letter changes everything."
-        ),
-        MediaStory(
-            "Midnight Mystery",
-            "Mystery",
-            "https://placehold.co/600x900/151b32/ffffff?text=Midnight+Mystery",
-            "A strange mystery begins at midnight."
-        ),
-        MediaStory(
-            "Campus Days",
-            "Romance",
-            "https://placehold.co/600x900/3d202d/ffffff?text=Campus+Days",
-            "Friendship, love and college life."
-        ),
-        MediaStory(
-            "The Hidden Room",
-            "Thriller",
-            "https://placehold.co/600x900/20252c/ffffff?text=Hidden+Room",
-            "Nobody knows what is behind the door."
-        )
-    )
-
-    val newReleases = listOf(
-        MediaStory(
-            "Broken Promises",
-            "Drama",
-            "https://placehold.co/600x900/302020/ffffff?text=Broken+Promises",
-            "Some promises are impossible to keep."
-        ),
-        MediaStory(
-            "Dark Signal",
-            "Thriller",
-            "https://placehold.co/600x900/17252d/ffffff?text=Dark+Signal",
-            "A mysterious signal appears every night."
-        ),
-        MediaStory(
-            "First Love",
-            "Romance",
-            "https://placehold.co/600x900/3b2038/ffffff?text=First+Love",
-            "A first love nobody expected."
-        ),
-        MediaStory(
-            "Lost City",
-            "Adventure",
-            "https://placehold.co/600x900/172e28/ffffff?text=Lost+City",
-            "An impossible journey begins."
-        )
-    )
+    val stories = sampleStories()
 
     LazyColumn(
         modifier = modifier
@@ -224,8 +211,9 @@ fun HomeScreen(
 
         item {
             HeroBanner(
+                story = stories[0],
                 onWatch = {
-                    onStoryClick(trending[0])
+                    onStoryClick(stories[0])
                 }
             )
         }
@@ -233,7 +221,7 @@ fun HomeScreen(
         item {
             StorySection(
                 title = "🔥 Trending Now",
-                stories = trending,
+                stories = stories,
                 onStoryClick = onStoryClick
             )
         }
@@ -241,7 +229,7 @@ fun HomeScreen(
         item {
             StorySection(
                 title = "Continue Watching",
-                stories = newReleases,
+                stories = stories.reversed(),
                 onStoryClick = onStoryClick
             )
         }
@@ -249,19 +237,94 @@ fun HomeScreen(
         item {
             StorySection(
                 title = "✨ New Releases",
-                stories = trending.reversed(),
+                stories = stories,
                 onStoryClick = onStoryClick
             )
+
         }
 
         item {
             StorySection(
                 title = "Popular Stories",
-                stories = newReleases.reversed(),
+                stories = stories.reversed(),
                 onStoryClick = onStoryClick
             )
         }
     }
+}
+
+/* ================= SAMPLE DATA ================= */
+
+fun sampleStories(): List<MediaStory> {
+
+    return listOf(
+
+        MediaStory(
+            "The Last Letter",
+            "Drama",
+            "https://placehold.co/600x900/24143d/ffffff?text=The+Last+Letter",
+            "A mysterious letter changes everything."
+        ),
+
+        MediaStory(
+            "Midnight Mystery",
+            "Mystery",
+            "https://placehold.co/600x900/151b32/ffffff?text=Midnight+Mystery",
+            "A strange mystery begins at midnight."
+        ),
+
+        MediaStory(
+            "Campus Days",
+            "Romance",
+            "https://placehold.co/600x900/3d202d/ffffff?text=Campus+Days",
+            "Friendship, love and college life."
+        ),
+
+        MediaStory(
+            "The Hidden Room",
+            "Thriller",
+            "https://placehold.co/600x900/20252c/ffffff?text=Hidden+Room",
+            "Nobody knows what is behind the door."
+        )
+    )
+}
+
+fun sampleEpisodes(): List<Episode> {
+
+    return listOf(
+
+        Episode(
+            1,
+            "The Beginning",
+            "Everything starts with a mysterious letter.",
+            "12:42",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+        ),
+
+        Episode(
+            2,
+            "The Mysterious Letter",
+            "The truth behind the letter starts to appear.",
+            "14:18",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+        ),
+
+        Episode(
+            3,
+            "A Secret Revealed",
+            "One secret changes the entire story.",
+            "16:05",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+        ),
+
+        Episode(
+            4,
+            "The Unexpected Visitor",
+            "Someone from the past returns.",
+            "13:37",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        )
+    )
 }
 
 /* ================= HEADER ================= */
@@ -324,6 +387,7 @@ fun TopHeader() {
 
 @Composable
 fun HeroBanner(
+    story: MediaStory,
     onWatch: () -> Unit
 ) {
 
@@ -336,8 +400,8 @@ fun HeroBanner(
     ) {
 
         AsyncImage(
-            model = "https://placehold.co/1200x1600/24113d/ffffff?text=MEDIA+TV",
-            contentDescription = "Featured story",
+            model = story.image,
+            contentDescription = story.title,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -375,7 +439,7 @@ fun HeroBanner(
             )
 
             Text(
-                text = "The Last Letter",
+                text = story.title,
                 color = Color.White,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.ExtraBold
@@ -386,7 +450,7 @@ fun HeroBanner(
             )
 
             Text(
-                text = "A mysterious letter changes everything.",
+                text = story.description,
                 color = Color(0xFFD0D0D5),
                 fontSize = 12.sp,
                 maxLines = 2
@@ -457,7 +521,9 @@ fun StorySection(
 
         Row(
             modifier = Modifier
-                .horizontalScroll(rememberScrollState())
+                .horizontalScroll(
+                    rememberScrollState()
+                )
                 .padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -486,7 +552,8 @@ fun StoryPoster(
     Column(
         modifier = Modifier
             .width(132.dp)
-            .clickable(onClick = onClick)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Background)
     ) {
 
         AsyncImage(
@@ -509,7 +576,10 @@ fun StoryPoster(
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(
+                horizontal = 2.dp
+            )
         )
 
         Spacer(
@@ -519,9 +589,18 @@ fun StoryPoster(
         Text(
             text = story.category,
             color = TextSecondary,
-            fontSize = 10.sp
+            fontSize = 10.sp,
+            modifier = Modifier.padding(
+                horizontal = 2.dp
+            )
         )
     }
+
+    Box(
+        modifier = Modifier
+            .width(132.dp)
+            .height(0.dp)
+    )
 }
 
 /* ================= STORY DETAILS ================= */
@@ -530,35 +609,11 @@ fun StoryPoster(
 fun StoryDetailsScreen(
     story: MediaStory,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEpisodeClick: (Episode) -> Unit
 ) {
 
-    val episodes = listOf(
-        Episode(
-            1,
-            "The Beginning",
-            "Everything starts with a mysterious letter.",
-            "12:42"
-        ),
-        Episode(
-            2,
-            "The Mysterious Letter",
-            "The truth behind the letter starts to appear.",
-            "14:18"
-        ),
-        Episode(
-            3,
-            "A Secret Revealed",
-            "One secret changes the entire story.",
-            "16:05"
-        ),
-        Episode(
-            4,
-            "The Unexpected Visitor",
-            "Someone from the past returns.",
-            "13:37"
-        )
-    )
+    val episodes = sampleEpisodes()
 
     LazyColumn(
         modifier = modifier
@@ -588,7 +643,7 @@ fun StoryDetailsScreen(
                         .background(
                             Brush.verticalGradient(
                                 listOf(
-                                    Color(0x9907070A),
+                                    Color(0xAA07070A),
                                     Color.Transparent,
                                     Color(0xFF07070A)
                                 )
@@ -604,7 +659,9 @@ fun StoryDetailsScreen(
                             start = 18.dp,
                             top = 20.dp
                         )
-                        .clickable(onClick = onBack),
+                        .clickable {
+                            onBack()
+                        },
                     color = Color.White,
                     fontSize = 38.sp
                 )
@@ -644,6 +701,10 @@ fun StoryDetailsScreen(
                 )
             ) {
 
+                Spacer(
+                    modifier = Modifier.height(10.dp)
+                )
+
                 Text(
                     text = story.description,
                     color = TextSecondary,
@@ -656,7 +717,9 @@ fun StoryDetailsScreen(
                 )
 
                 Button(
-                    onClick = {},
+                    onClick = {
+                        onEpisodeClick(episodes.first())
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
@@ -691,7 +754,10 @@ fun StoryDetailsScreen(
         items(episodes) { episode ->
 
             EpisodeCard(
-                episode = episode
+                episode = episode,
+                onClick = {
+                    onEpisodeClick(episode)
+                }
             )
         }
     }
@@ -701,7 +767,8 @@ fun StoryDetailsScreen(
 
 @Composable
 fun EpisodeCard(
-    episode: Episode
+    episode: Episode,
+    onClick: () -> Unit
 ) {
 
     Row(
@@ -713,6 +780,9 @@ fun EpisodeCard(
             )
             .clip(RoundedCornerShape(14.dp))
             .background(CardDark)
+            .clickable {
+                onClick()
+            }
             .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -786,6 +856,130 @@ fun EpisodeCard(
     }
 }
 
+/* ================= VIDEO PLAYER ================= */
+
+@Composable
+fun VideoPlayerScreen(
+    episode: Episode,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit
+) {
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val player = remember {
+
+        ExoPlayer.Builder(context)
+            .build()
+            .apply {
+
+                val mediaItem = MediaItem.fromUri(
+                    Uri.parse(episode.videoUrl)
+                )
+
+                setMediaItem(mediaItem)
+
+                prepare()
+
+                playWhenReady = true
+            }
+    }
+
+    DisposableEffect(Unit) {
+
+        onDispose {
+            player.release()
+        }
+    }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+        ) {
+
+            AndroidView(
+                factory = {
+                    PlayerView(it).apply {
+                        this.player = player
+                        useController = true
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Text(
+                text = "‹",
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(
+                        start = 16.dp,
+                        top = 16.dp
+                    )
+                    .clickable {
+                        onBack()
+                    },
+                color = Color.White,
+                fontSize = 38.sp
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Background)
+                .padding(20.dp)
+        ) {
+
+            Text(
+                text = "Episode ${episode.number}",
+                color = Color(0xFFA78BFA),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(7.dp)
+            )
+
+            Text(
+                text = episode.title,
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = episode.description,
+                color = TextSecondary,
+                fontSize = 13.sp,
+                lineHeight = 20.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+
+            Text(
+                text = "More Episodes",
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
 /* ================= SEARCH ================= */
 
 @Composable
@@ -794,12 +988,7 @@ fun SearchScreen(
     onStoryClick: (MediaStory) -> Unit
 ) {
 
-    val story = MediaStory(
-        "The Last Letter",
-        "Drama",
-        "https://placehold.co/600x900/24143d/ffffff?text=The+Last+Letter",
-        "A mysterious letter changes everything."
-    )
+    val story = sampleStories()[0]
 
     Column(
         modifier = modifier
