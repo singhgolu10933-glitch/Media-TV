@@ -11,7 +11,7 @@ object ApiClient {
      * Media TV Backend
      *
      * Backend deploy hone ke baad
-     * is URL ko actual API URL se replace karna hai.
+     * is URL ko actual backend URL se replace karna hai.
      */
     private const val BASE_URL =
         "https://YOUR-MEDIA-TV-BACKEND.com"
@@ -96,9 +96,7 @@ object ApiClient {
                     image = thumbnail,
                     description = description,
                     gradient =
-                        gradientForCategory(
-                            category
-                        )
+                        gradientForCategory(category)
                 )
             )
         }
@@ -110,9 +108,7 @@ object ApiClient {
         category: String
     ): List<Color> {
 
-        return when (
-            category.lowercase()
-        ) {
+        return when (category.lowercase()) {
 
             "mystery" -> listOf(
                 Color(0xFF193A6B),
