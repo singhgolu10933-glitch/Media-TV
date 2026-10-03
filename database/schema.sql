@@ -1,3 +1,7 @@
+-- ============================================
+-- MEDIA TV DATABASE
+-- ============================================
+
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
@@ -5,6 +9,11 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+
+-- ============================================
+-- STORIES
+-- ============================================
 
 CREATE TABLE IF NOT EXISTS stories (
     id BIGSERIAL PRIMARY KEY,
@@ -15,22 +24,37 @@ CREATE TABLE IF NOT EXISTS stories (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+
+-- ============================================
+-- EPISODES
+-- ============================================
+
 CREATE TABLE IF NOT EXISTS episodes (
     id BIGSERIAL PRIMARY KEY,
+
     story_id BIGINT NOT NULL
         REFERENCES stories(id)
         ON DELETE CASCADE,
 
     episode_number INTEGER NOT NULL,
+
     title VARCHAR(200) NOT NULL,
+
     description TEXT,
+
     video_url TEXT NOT NULL,
+
     duration_seconds INTEGER DEFAULT 0,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
 
     UNIQUE(story_id, episode_number)
 );
+
+
+-- ============================================
+-- WATCH HISTORY
+-- ============================================
 
 CREATE TABLE IF NOT EXISTS watch_history (
     id BIGSERIAL PRIMARY KEY,
@@ -44,10 +68,16 @@ CREATE TABLE IF NOT EXISTS watch_history (
         ON DELETE CASCADE,
 
     position_seconds INTEGER DEFAULT 0,
+
     updated_at TIMESTAMPTZ DEFAULT NOW(),
 
     UNIQUE(user_id, episode_id)
 );
+
+
+-- ============================================
+-- WATCHLIST
+-- ============================================
 
 CREATE TABLE IF NOT EXISTS watchlist (
     user_id BIGINT NOT NULL
@@ -63,6 +93,11 @@ CREATE TABLE IF NOT EXISTS watchlist (
     PRIMARY KEY(user_id, story_id)
 );
 
+
+-- ============================================
+-- SAMPLE STORY
+-- ============================================
+
 INSERT INTO stories (
     title,
     description,
@@ -71,14 +106,19 @@ INSERT INTO stories (
 )
 SELECT
     'The Last Letter',
-    'A sample story for development.',
-    'https://placehold.co/800x450',
+    'A sample story for Media TV.',
+    '',
     'Drama'
 WHERE NOT EXISTS (
     SELECT 1
     FROM stories
     WHERE title = 'The Last Letter'
 );
+
+
+-- ============================================
+-- SAMPLE EPISODE
+-- ============================================
 
 INSERT INTO episodes (
     story_id,
@@ -92,8 +132,8 @@ SELECT
     id,
     1,
     'Episode 1',
-    'Sample episode.',
-    'https://example.com/sample.m3u8',
+    'Sample episode for Media TV.',
+    '',
     300
 FROM stories
 WHERE title = 'The Last Letter'
