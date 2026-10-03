@@ -33,10 +33,11 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.0")
 
     implementation("androidx.compose.ui:ui:1.7.6")
-
     implementation("androidx.compose.material3:material3:1.3.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.7.6")
 
-    implementation(
-        "androidx.compose.ui:ui-tooling-preview:1.7.6"
-    )
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-ui:1.8.0")
 }
