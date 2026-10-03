@@ -79,7 +79,7 @@ object EpisodeApiClient {
             val description =
                 item.optString(
                     "description",
-                    ""
+                    "A new episode from Media TV."
                 )
 
             val videoUrl =
@@ -94,18 +94,43 @@ object EpisodeApiClient {
                     0
                 )
 
+            val duration =
+                formatDuration(
+                    durationSeconds
+                )
+
             episodes.add(
                 Episode(
                     number = episodeNumber,
                     title = title,
                     description = description,
-                    videoUrl = videoUrl,
-                    durationSeconds =
-                        durationSeconds
+                    duration = duration,
+                    videoUrl = videoUrl
                 )
             )
         }
 
         return episodes
+    }
+
+    private fun formatDuration(
+        seconds: Int
+    ): String {
+
+        if (seconds <= 0) {
+            return "--:--"
+        }
+
+        val minutes =
+            seconds / 60
+
+        val remainingSeconds =
+            seconds % 60
+
+        return String.format(
+            "%02d:%02d",
+            minutes,
+            remainingSeconds
+        )
     }
 }
