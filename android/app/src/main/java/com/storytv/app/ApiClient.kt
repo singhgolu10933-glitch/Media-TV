@@ -8,12 +8,10 @@ import java.net.URL
 object ApiClient {
 
     /*
-     * MEDIA TV BACKEND
+     * Media TV Backend
      *
-     * अभी अपना real backend URL यहाँ डालना बाकी है.
-     *
-     * Example:
-     * https://api.mediatv.com
+     * Backend deploy hone ke baad
+     * is URL ko actual API URL se replace karna hai.
      */
     private const val BASE_URL =
         "https://YOUR-MEDIA-TV-BACKEND.com"
@@ -31,26 +29,24 @@ object ApiClient {
             connection.readTimeout = 10000
 
             if (connection.responseCode !in 200..299) {
-
                 connection.disconnect()
-
                 return emptyList()
             }
 
             val response =
                 connection.inputStream
                     .bufferedReader()
-                    .use {
-                        it.readText()
+                    .use { reader ->
+                        reader.readText()
                     }
 
             connection.disconnect()
 
             parseStories(response)
 
-        } catch (error: Exception) {
+        } catch (exception: Exception) {
 
-            error.printStackTrace()
+            exception.printStackTrace()
 
             emptyList()
         }
@@ -99,9 +95,10 @@ object ApiClient {
                     category = category,
                     image = thumbnail,
                     description = description,
-                    gradient = gradientForCategory(
-                        category
-                    )
+                    gradient =
+                        gradientForCategory(
+                            category
+                        )
                 )
             )
         }
