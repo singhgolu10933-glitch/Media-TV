@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,7 +58,8 @@ data class MediaStory(
     val title: String,
     val category: String,
     val image: String,
-    val description: String
+    val description: String,
+    val gradient: List<Color>
 )
 
 data class Episode(
@@ -71,9 +73,11 @@ data class Episode(
 private val Background = Color(0xFF07070A)
 private val SurfaceDark = Color(0xFF111116)
 private val CardDark = Color(0xFF18181F)
+private val CardLight = Color(0xFF202027)
 private val TextPrimary = Color(0xFFF7F7F8)
 private val TextSecondary = Color(0xFF9999A5)
 private val Accent = Color(0xFF8B5CF6)
+private val AccentLight = Color(0xFFA78BFA)
 
 class MainActivity : ComponentActivity() {
 
@@ -179,7 +183,101 @@ fun MediaTvApp() {
     }
 }
 
-/* ================= HOME ================= */
+/* =========================================================
+   SAMPLE DATA
+   ========================================================= */
+
+fun sampleStories(): List<MediaStory> {
+
+    return listOf(
+
+        MediaStory(
+            title = "The Last Letter",
+            category = "Drama",
+            image = "https://placehold.co/800x1100/24143d/ffffff?text=The+Last+Letter",
+            description = "A mysterious letter changes everything.",
+            gradient = listOf(
+                Color(0xFF54258C),
+                Color(0xFF17101F)
+            )
+        ),
+
+        MediaStory(
+            title = "Midnight Mystery",
+            category = "Mystery",
+            image = "https://placehold.co/800x1100/151b32/ffffff?text=Midnight+Mystery",
+            description = "A strange mystery begins at midnight.",
+            gradient = listOf(
+                Color(0xFF193A6B),
+                Color(0xFF0B101D)
+            )
+        ),
+
+        MediaStory(
+            title = "Campus Days",
+            category = "Romance",
+            image = "https://placehold.co/800x1100/3d202d/ffffff?text=Campus+Days",
+            description = "Friendship, love and college life.",
+            gradient = listOf(
+                Color(0xFF963B66),
+                Color(0xFF21101A)
+            )
+        ),
+
+        MediaStory(
+            title = "The Hidden Room",
+            category = "Thriller",
+            image = "https://placehold.co/800x1100/20252c/ffffff?text=Hidden+Room",
+            description = "Nobody knows what is behind the door.",
+            gradient = listOf(
+                Color(0xFF38505C),
+                Color(0xFF0D1114)
+            )
+        )
+    )
+}
+
+fun sampleEpisodes(): List<Episode> {
+
+    return listOf(
+
+        Episode(
+            1,
+            "The Beginning",
+            "Everything starts with a mysterious letter.",
+            "12:42",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+        ),
+
+        Episode(
+            2,
+            "The Mysterious Letter",
+            "The truth behind the letter starts to appear.",
+            "14:18",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+        ),
+
+        Episode(
+            3,
+            "A Secret Revealed",
+            "One secret changes the entire story.",
+            "16:05",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+        ),
+
+        Episode(
+            4,
+            "The Unexpected Visitor",
+            "Someone from the past returns.",
+            "13:37",
+            "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        )
+    )
+}
+
+/* =========================================================
+   HOME
+   ========================================================= */
 
 @Composable
 fun HomeScreen(
@@ -205,7 +303,9 @@ fun HomeScreen(
         }
 
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
         }
 
         item {
@@ -251,81 +351,9 @@ fun HomeScreen(
     }
 }
 
-/* ================= DATA ================= */
-
-fun sampleStories(): List<MediaStory> {
-
-    return listOf(
-
-        MediaStory(
-            "The Last Letter",
-            "Drama",
-            "https://placehold.co/800x1100/24143d/ffffff?text=The+Last+Letter",
-            "A mysterious letter changes everything."
-        ),
-
-        MediaStory(
-            "Midnight Mystery",
-            "Mystery",
-            "https://placehold.co/800x1100/151b32/ffffff?text=Midnight+Mystery",
-            "A strange mystery begins at midnight."
-        ),
-
-        MediaStory(
-            "Campus Days",
-            "Romance",
-            "https://placehold.co/800x1100/3d202d/ffffff?text=Campus+Days",
-            "Friendship, love and college life."
-        ),
-
-        MediaStory(
-            "The Hidden Room",
-            "Thriller",
-            "https://placehold.co/800x1100/20252c/ffffff?text=Hidden+Room",
-            "Nobody knows what is behind the door."
-        )
-    )
-}
-
-fun sampleEpisodes(): List<Episode> {
-
-    return listOf(
-
-        Episode(
-            1,
-            "The Beginning",
-            "Everything starts with a mysterious letter.",
-            "12:42",
-            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
-        ),
-
-        Episode(
-            2,
-            "The Mysterious Letter",
-            "The truth behind the letter starts to appear.",
-            "14:18",
-            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-        ),
-
-        Episode(
-            3,
-            "A Secret Revealed",
-            "One secret changes the entire story.",
-            "16:05",
-            "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
-        ),
-
-        Episode(
-            4,
-            "The Unexpected Visitor",
-            "Someone from the past returns.",
-            "13:37",
-            "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-        )
-    )
-}
-
-/* ================= HEADER ================= */
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 @Composable
 fun TopHeader() {
@@ -350,8 +378,8 @@ fun TopHeader() {
 
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(10.dp))
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(11.dp))
                         .background(
                             Brush.linearGradient(
                                 listOf(
@@ -383,7 +411,7 @@ fun TopHeader() {
 
                 Text(
                     text = " TV",
-                    color = Color(0xFFA78BFA),
+                    color = AccentLight,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -394,7 +422,7 @@ fun TopHeader() {
                 color = TextSecondary,
                 fontSize = 10.sp,
                 modifier = Modifier.padding(
-                    start = 43.dp
+                    start = 45.dp
                 )
             )
         }
@@ -419,7 +447,9 @@ fun TopHeader() {
     }
 }
 
-/* ================= CATEGORY CHIPS ================= */
+/* =========================================================
+   CATEGORY
+   ========================================================= */
 
 @Composable
 fun CategoryChips() {
@@ -472,7 +502,9 @@ fun CategoryChips() {
     }
 }
 
-/* ================= HERO ================= */
+/* =========================================================
+   HERO
+   ========================================================= */
 
 @Composable
 fun HeroBanner(
@@ -486,7 +518,17 @@ fun HeroBanner(
             .fillMaxWidth()
             .height(410.dp)
             .clip(RoundedCornerShape(24.dp))
+            .background(
+                Brush.verticalGradient(
+                    story.gradient
+                )
+            )
     ) {
+
+        /*
+         * Image is placed over a gradient.
+         * If remote image fails, gradient remains visible.
+         */
 
         AsyncImage(
             model = story.image,
@@ -517,7 +559,7 @@ fun HeroBanner(
 
             Text(
                 text = "MEDIA TV ORIGINAL",
-                color = Color(0xFFC4B5FD),
+                color = Color(0xFFD8C9FF),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
@@ -561,7 +603,7 @@ fun HeroBanner(
 
                 Text(
                     text = "  •  4K",
-                    color = Color(0xFFA78BFA),
+                    color = AccentLight,
                     fontSize = 10.sp
                 )
             }
@@ -600,7 +642,9 @@ fun HeroBanner(
     }
 }
 
-/* ================= STORY SECTION ================= */
+/* =========================================================
+   STORY SECTION
+   ========================================================= */
 
 @Composable
 fun StorySection(
@@ -632,7 +676,7 @@ fun StorySection(
 
             Text(
                 text = "See all  ›",
-                color = Color(0xFFA78BFA),
+                color = AccentLight,
                 fontSize = 11.sp
             )
         }
@@ -663,7 +707,9 @@ fun StorySection(
     }
 }
 
-/* ================= POSTER ================= */
+/* =========================================================
+   STORY POSTER
+   ========================================================= */
 
 @Composable
 fun StoryPoster(
@@ -679,15 +725,22 @@ fun StoryPoster(
             }
     ) {
 
-        Box {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(195.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(
+                    Brush.verticalGradient(
+                        story.gradient
+                    )
+                )
+        ) {
 
             AsyncImage(
                 model = story.image,
                 contentDescription = story.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(195.dp)
-                    .clip(RoundedCornerShape(15.dp)),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
 
@@ -709,6 +762,21 @@ fun StoryPoster(
                     fontWeight = FontWeight.Bold
                 )
             }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .height(65.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color(0xDD000000)
+                            )
+                        )
+                    )
+            )
         }
 
         Spacer(
@@ -730,13 +798,15 @@ fun StoryPoster(
 
         Text(
             text = "▶  Watch now",
-            color = Color(0xFFA78BFA),
+            color = AccentLight,
             fontSize = 9.sp
         )
     }
 }
 
-/* ================= STORY DETAILS ================= */
+/* =========================================================
+   STORY DETAILS
+   ========================================================= */
 
 @Composable
 fun StoryDetailsScreen(
@@ -761,6 +831,11 @@ fun StoryDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(430.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            story.gradient
+                        )
+                    )
             ) {
 
                 AsyncImage(
@@ -807,7 +882,7 @@ fun StoryDetailsScreen(
 
                     Text(
                         text = story.category.uppercase(),
-                        color = Color(0xFFC4B5FD),
+                        color = Color(0xFFD8C9FF),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -833,6 +908,10 @@ fun StoryDetailsScreen(
                     horizontal = 20.dp
                 )
             ) {
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
 
                 Text(
                     text = story.description,
@@ -892,7 +971,9 @@ fun StoryDetailsScreen(
     }
 }
 
-/* ================= EPISODE ================= */
+/* =========================================================
+   EPISODE
+   ========================================================= */
 
 @Composable
 fun EpisodeCard(
@@ -948,7 +1029,7 @@ fun EpisodeCard(
 
             Text(
                 text = "EPISODE ${episode.number}",
-                color = Color(0xFFA78BFA),
+                color = AccentLight,
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -985,7 +1066,9 @@ fun EpisodeCard(
     }
 }
 
-/* ================= PLAYER ================= */
+/* =========================================================
+   VIDEO PLAYER
+   ========================================================= */
 
 @Composable
 fun VideoPlayerScreen(
@@ -1067,7 +1150,7 @@ fun VideoPlayerScreen(
 
             Text(
                 text = "EPISODE ${episode.number}",
-                color = Color(0xFFA78BFA),
+                color = AccentLight,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -1097,7 +1180,9 @@ fun VideoPlayerScreen(
     }
 }
 
-/* ================= SEARCH ================= */
+/* =========================================================
+   SEARCH
+   ========================================================= */
 
 @Composable
 fun SearchScreen(
@@ -1107,71 +1192,150 @@ fun SearchScreen(
 
     val stories = sampleStories()
 
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Background)
-            .padding(20.dp)
+            .background(Background),
+        contentPadding = PaddingValues(
+            horizontal = 20.dp,
+            vertical = 20.dp
+        )
     ) {
 
-        Text(
-            text = "Search",
-            color = TextPrimary,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
-
-        Spacer(
-            modifier = Modifier.height(18.dp)
-        )
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
-            color = CardDark
-        ) {
+        item {
 
             Text(
-                text = "⌕  Search stories, episodes...",
-                modifier = Modifier.padding(17.dp),
-                color = TextSecondary,
-                fontSize = 13.sp
+                text = "Search",
+                color = TextPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Spacer(
+                modifier = Modifier.height(18.dp)
+            )
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                color = CardDark
+            ) {
+
+                Text(
+                    text = "⌕  Search stories, episodes...",
+                    modifier = Modifier.padding(17.dp),
+                    color = TextSecondary,
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(28.dp)
+            )
+
+            Text(
+                text = "Popular Stories",
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(14.dp)
             )
         }
 
-        Spacer(
-            modifier = Modifier.height(28.dp)
-        )
+        items(stories) { story ->
 
-        Text(
-            text = "Popular",
-            color = TextPrimary,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(
-            modifier = Modifier.height(14.dp)
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            stories.take(2).forEach {
-
-                StoryPoster(
-                    story = it,
-                    onClick = {
-                        onStoryClick(it)
-                    }
-                )
-            }
+            SearchStoryRow(
+                story = story,
+                onClick = {
+                    onStoryClick(story)
+                }
+            )
         }
     }
 }
 
-/* ================= LIBRARY ================= */
+/* =========================================================
+   SEARCH ROW
+   ========================================================= */
+
+@Composable
+fun SearchStoryRow(
+    story: MediaStory,
+    onClick: () -> Unit
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(CardDark)
+            .clickable {
+                onClick()
+            }
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(65.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(
+                    Brush.verticalGradient(
+                        story.gradient
+                    )
+                )
+        ) {
+
+            AsyncImage(
+                model = story.image,
+                contentDescription = story.title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.width(12.dp)
+        )
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+
+            Text(
+                text = story.title,
+                color = TextPrimary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
+
+            Text(
+                text = story.category,
+                color = AccentLight,
+                fontSize = 10.sp
+            )
+        }
+
+        Text(
+            text = "›",
+            color = TextSecondary,
+            fontSize = 24.sp
+        )
+    }
+}
+
+/* =========================================================
+   LIBRARY
+   ========================================================= */
 
 @Composable
 fun LibraryScreen(
@@ -1193,7 +1357,7 @@ fun LibraryScreen(
         )
 
         Spacer(
-            modifier = Modifier.height(10.dp)
+            modifier = Modifier.height(8.dp)
         )
 
         Text(
@@ -1201,32 +1365,9 @@ fun LibraryScreen(
             color = TextSecondary,
             fontSize = 12.sp
         )
-    }
-}
-
-/* ================= PROFILE ================= */
-
-@Composable
-fun ProfileScreen(
-    modifier: Modifier
-) {
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Background)
-            .padding(20.dp)
-    ) {
-
-        Text(
-            text = "Profile",
-            color = TextPrimary,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
 
         Spacer(
-            modifier = Modifier.height(25.dp)
+            modifier = Modifier.height(30.dp)
         )
 
         Surface(
@@ -1235,14 +1376,164 @@ fun ProfileScreen(
             color = CardDark
         ) {
 
+            Column(
+                modifier = Modifier.padding(22.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                Text(
+                    text = "♡",
+                    color = AccentLight,
+                    fontSize = 38.sp
+                )
+
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
+
+                Text(
+                    text = "Your library is empty",
+                    color = TextPrimary,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(
+                    modifier = Modifier.height(5.dp)
+                )
+
+                Text(
+                    text = "Stories you save will appear here.",
+                    color = TextSecondary,
+                    fontSize = 11.sp
+                )
+            }
+        }
+    }
+}
+
+/* =========================================================
+   PREMIUM PROFILE
+   ========================================================= */
+
+@Composable
+fun ProfileScreen(
+    modifier: Modifier
+) {
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Background),
+        contentPadding = PaddingValues(
+            start = 20.dp,
+            end = 20.dp,
+            top = 22.dp,
+            bottom = 35.dp
+        )
+    ) {
+
+        item {
+
+            Text(
+                text = "Profile",
+                color = TextPrimary,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            ProfileHeaderCard()
+
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+
+            PremiumPlanCard()
+
+            Spacer(
+                modifier = Modifier.height(25.dp)
+            )
+
+            Text(
+                text = "Account",
+                color = TextSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(9.dp)
+            )
+
+            ProfileMenuCard()
+
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+
+            Text(
+                text = "Preferences",
+                color = TextSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(9.dp)
+            )
+
+            PreferenceCard()
+
+            Spacer(
+                modifier = Modifier.height(25.dp)
+            )
+
+            Text(
+                text = "Media TV v1.0.0",
+                color = Color(0xFF555560),
+                fontSize = 10.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+        }
+    }
+}
+
+/* =========================================================
+   PROFILE HEADER
+   ========================================================= */
+
+@Composable
+fun ProfileHeaderCard() {
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(22.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFF211335),
+                        Color(0xFF16161D),
+                        Color(0xFF101014)
+                    )
+                )
+            )
+            .padding(20.dp)
+    ) {
+
+        Column {
+
             Row(
-                modifier = Modifier.padding(18.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(70.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
@@ -1258,36 +1549,413 @@ fun ProfileScreen(
                     Text(
                         text = "M",
                         color = Color.White,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
 
                 Spacer(
-                    modifier = Modifier.width(14.dp)
+                    modifier = Modifier.width(15.dp)
                 )
 
-                Column {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
 
                     Text(
                         text = "Media TV User",
-                        color = TextPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(4.dp)
                     )
 
                     Text(
-                        text = "Free Account",
+                        text = "user@mediatv.app",
                         color = TextSecondary,
-                        fontSize = 11.sp
+                        fontSize = 10.sp
                     )
+
+                    Spacer(
+                        modifier = Modifier.height(7.dp)
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(50.dp),
+                        color = Color(0x337C3AED)
+                    ) {
+
+                        Text(
+                            text = "FREE MEMBER",
+                            color = AccentLight,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(
+                                horizontal = 9.dp,
+                                vertical = 5.dp
+                            )
+                        )
+                    }
                 }
+
+                Text(
+                    text = "›",
+                    color = TextSecondary,
+                    fontSize = 28.sp
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+            Divider(
+                color = Color(0x22383842)
+            )
+
+            Spacer(
+                modifier = Modifier.height(15.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+
+                ProfileStat(
+                    value = "0",
+                    label = "Watchlist"
+                )
+
+                ProfileStat(
+                    value = "0",
+                    label = "Watched"
+                )
+
+                ProfileStat(
+                    value = "0",
+                    label = "Reviews"
+                )
             }
         }
     }
 }
 
-/* ================= BOTTOM NAV ================= */
+@Composable
+fun ProfileStat(
+    value: String,
+    label: String
+) {
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text(
+            text = value,
+            color = Color.White,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(
+            modifier = Modifier.height(3.dp)
+        )
+
+        Text(
+            text = label,
+            color = TextSecondary,
+            fontSize = 9.sp
+        )
+    }
+}
+
+/* =========================================================
+   PREMIUM PLAN
+   ========================================================= */
+
+@Composable
+fun PremiumPlanCard() {
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFF6D28D9),
+                        Color(0xFF8B5CF6),
+                        Color(0xFFEC4899)
+                    )
+                )
+            )
+            .padding(20.dp)
+    ) {
+
+        Column {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    Text(
+                        text = "MEDIA TV PREMIUM",
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.2.sp
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(6.dp)
+                    )
+
+                    Text(
+                        text = "Watch without limits.",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(4.dp)
+                    )
+
+                    Text(
+                        text = "4K • Ad-free • Exclusive stories",
+                        color = Color(0xFFE9D5FF),
+                        fontSize = 10.sp
+                    )
+                }
+
+                Text(
+                    text = "✦",
+                    color = Color.White,
+                    fontSize = 34.sp
+                )
+            }
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            Button(
+                onClick = {
+                    // Premium screen will be connected later.
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF5B21B6)
+                ),
+                shape = RoundedCornerShape(11.dp)
+            ) {
+
+                Text(
+                    text = "Explore Premium",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+/* =========================================================
+   PROFILE MENU
+   ========================================================= */
+
+@Composable
+fun ProfileMenuCard() {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(17.dp))
+            .background(CardDark)
+    ) {
+
+        ProfileMenuItem(
+            icon = "✎",
+            title = "Edit Profile",
+            subtitle = "Change your name and profile",
+            arrow = true
+        )
+
+        ProfileMenuDivider()
+
+        ProfileMenuItem(
+            icon = "♡",
+            title = "My Watchlist",
+            subtitle = "Stories saved for later",
+            arrow = true
+        )
+
+        ProfileMenuDivider()
+
+        ProfileMenuItem(
+            icon = "◷",
+            title = "Watch History",
+            subtitle = "See what you watched",
+            arrow = true
+        )
+
+        ProfileMenuDivider()
+
+        ProfileMenuItem(
+            icon = "▣",
+            title = "Downloads",
+            subtitle = "Your offline videos",
+            arrow = true
+        )
+    }
+}
+
+@Composable
+fun ProfileMenuItem(
+    icon: String,
+    title: String,
+    subtitle: String,
+    arrow: Boolean
+) {
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                // Feature will be connected later.
+            }
+            .padding(
+                horizontal = 15.dp,
+                vertical = 14.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(Color(0xFF22222A)),
+            contentAlignment = Alignment.Center
+        ) {
+
+            Text(
+                text = icon,
+                color = AccentLight,
+                fontSize = 16.sp
+            )
+        }
+
+        Spacer(
+            modifier = Modifier.width(12.dp)
+        )
+
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+
+            Text(
+                text = title,
+                color = TextPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(
+                modifier = Modifier.height(3.dp)
+            )
+
+            Text(
+                text = subtitle,
+                color = TextSecondary,
+                fontSize = 9.sp
+            )
+        }
+
+        if (arrow) {
+
+            Text(
+                text = "›",
+                color = TextSecondary,
+                fontSize = 22.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun ProfileMenuDivider() {
+
+    Divider(
+        modifier = Modifier.padding(
+            start = 65.dp
+        ),
+        color = Color(0x222F2F38)
+    )
+}
+
+/* =========================================================
+   PREFERENCES
+   ========================================================= */
+
+@Composable
+fun PreferenceCard() {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(17.dp))
+            .background(CardDark)
+    ) {
+
+        ProfileMenuItem(
+            icon = "⚙",
+            title = "Settings",
+            subtitle = "App preferences and controls",
+            arrow = true
+        )
+
+        ProfileMenuDivider()
+
+        ProfileMenuItem(
+            icon = "🔔",
+            title = "Notifications",
+            subtitle = "Manage notifications",
+            arrow = true
+        )
+
+        ProfileMenuDivider()
+
+        ProfileMenuItem(
+            icon = "?",
+            title = "Help & Support",
+            subtitle = "Get help with Media TV",
+            arrow = true
+        )
+
+        ProfileMenuDivider()
+
+        ProfileMenuItem(
+            icon = "ⓘ",
+            title = "About Media TV",
+            subtitle = "Version and information",
+            arrow = true
+        )
+    }
+}
+
+/* =========================================================
+   BOTTOM NAVIGATION
+   ========================================================= */
 
 @Composable
 fun MediaBottomNavigation(
@@ -1296,7 +1964,7 @@ fun MediaBottomNavigation(
 ) {
 
     Surface(
-        color = SurfaceDark
+        color = Color(0xFF111116)
     ) {
 
         Row(
@@ -1371,7 +2039,7 @@ fun BottomItem(
             text = icon,
             color =
                 if (selected)
-                    Color(0xFFA78BFA)
+                    AccentLight
                 else
                     TextSecondary,
             fontSize = 21.sp
