@@ -5,24 +5,18 @@
         name="Theme.MediaTV"
         parent="android:style/Theme.Material.NoActionBar">
 
-        <!-- App background -->
         <item name="android:windowBackground">@drawable/splash_background</item>
 
-        <!-- Status bar -->
         <item name="android:statusBarColor">@color/media_status_bar</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <!-- Navigation bar -->
         <item name="android:navigationBarColor">@color/media_navigation</item>
         <item name="android:windowLightNavigationBar">false</item>
 
-        <!-- Brand -->
         <item name="android:colorAccent">@color/media_primary</item>
 
-        <!-- Typography -->
         <item name="android:fontFamily">sans</item>
 
-        <!-- Window -->
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowNoTitle">true</item>
 
