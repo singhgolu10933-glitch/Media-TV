@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,10 +23,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -100,88 +101,78 @@ fun MediaTvApp() {
         mutableStateOf<Episode?>(null)
     }
 
-    MaterialTheme {
+    Scaffold(
+        containerColor = Background,
 
-        Scaffold(
-            containerColor = Background,
+        bottomBar = {
 
-            bottomBar = {
+            if (
+                selectedStory == null &&
+                selectedEpisode == null
+            ) {
+                MediaBottomNavigation(
+                    selectedTab = selectedTab,
+                    onTabSelected = {
+                        selectedTab = it
+                    }
+                )
+            }
+        }
 
-                if (
-                    selectedStory == null &&
-                    selectedEpisode == null
-                ) {
+    ) { paddingValues ->
 
-                    MediaBottomNavigation(
-                        selectedTab = selectedTab,
-                        onTabSelected = {
-                            selectedTab = it
-                        }
-                    )
-                }
+        when {
+
+            selectedEpisode != null -> {
+
+                VideoPlayerScreen(
+                    episode = selectedEpisode!!,
+                    modifier = Modifier.padding(paddingValues),
+                    onBack = {
+                        selectedEpisode = null
+                    }
+                )
             }
 
-        ) { paddingValues ->
+            selectedStory != null -> {
 
-            when {
-
-                selectedEpisode != null -> {
-
-                    VideoPlayerScreen(
-                        episode = selectedEpisode!!,
-                        modifier = Modifier
-                            .padding(paddingValues),
-                        onBack = {
-                            selectedEpisode = null
-                        }
-                    )
-                }
-
-                selectedStory != null -> {
-
-                    StoryDetailsScreen(
-                        story = selectedStory!!,
-                        modifier = Modifier
-                            .padding(paddingValues),
-                        onBack = {
-                            selectedStory = null
-                        },
-                        onEpisodeClick = {
-                            selectedEpisode = it
-                        }
-                    )
-                }
-
-                else -> {
-
-                    when (selectedTab) {
-
-                        0 -> HomeScreen(
-                            modifier = Modifier
-                                .padding(paddingValues),
-                            onStoryClick = {
-                                selectedStory = it
-                            }
-                        )
-
-                        1 -> SearchScreen(
-                            modifier = Modifier
-                                .padding(paddingValues),
-                            onStoryClick = {
-                                selectedStory = it
-                            }
-                        )
-
-                        2 -> LibraryScreen(
-                            modifier = Modifier
-                                .padding(paddingValues)
-                        )
-
-                        3 -> ProfileScreen(
-                            modifier = Modifier
-                                .padding(paddingValues)
-                        )
+                StoryDetailsScreen(
+                    story = selectedStory!!,
+                    modifier = Modifier.padding(paddingValues),
+                    onBack = {
+                        selectedStory = null
+                    },
+                    onEpisodeClick = {
+                        selectedEpisode = it
                     }
+                )
+            }
+
+            else -> {
+
+                when (selectedTab) {
+
+                    0 -> HomeScreen(
+                        modifier = Modifier.padding(paddingValues),
+                        onStoryClick = {
+                            selectedStory = it
+                        }
+                    )
+
+                    1 -> SearchScreen(
+                        modifier = Modifier.padding(paddingValues),
+                        onStoryClick = {
+                            selectedStory = it
+                        }
+                    )
+
+                    2 -> LibraryScreen(
+                        modifier = Modifier.padding(paddingValues)
+                    )
+
+                    else -> ProfileScreen(
+                        modifier = Modifier.padding(paddingValues)
+                    )
                 }
             }
         }
@@ -192,7 +183,7 @@ fun MediaTvApp() {
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     onStoryClick: (MediaStory) -> Unit
 ) {
 
@@ -210,6 +201,14 @@ fun HomeScreen(
         }
 
         item {
+            CategoryChips()
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
             HeroBanner(
                 story = stories[0],
                 onWatch = {
@@ -220,7 +219,7 @@ fun HomeScreen(
 
         item {
             StorySection(
-                title = "🔥 Trending Now",
+                title = "Trending Now",
                 stories = stories,
                 onStoryClick = onStoryClick
             )
@@ -236,11 +235,10 @@ fun HomeScreen(
 
         item {
             StorySection(
-                title = "✨ New Releases",
+                title = "New Releases",
                 stories = stories,
                 onStoryClick = onStoryClick
             )
-
         }
 
         item {
@@ -253,7 +251,7 @@ fun HomeScreen(
     }
 }
 
-/* ================= SAMPLE DATA ================= */
+/* ================= DATA ================= */
 
 fun sampleStories(): List<MediaStory> {
 
@@ -262,28 +260,28 @@ fun sampleStories(): List<MediaStory> {
         MediaStory(
             "The Last Letter",
             "Drama",
-            "https://placehold.co/600x900/24143d/ffffff?text=The+Last+Letter",
+            "https://placehold.co/800x1100/24143d/ffffff?text=The+Last+Letter",
             "A mysterious letter changes everything."
         ),
 
         MediaStory(
             "Midnight Mystery",
             "Mystery",
-            "https://placehold.co/600x900/151b32/ffffff?text=Midnight+Mystery",
+            "https://placehold.co/800x1100/151b32/ffffff?text=Midnight+Mystery",
             "A strange mystery begins at midnight."
         ),
 
         MediaStory(
             "Campus Days",
             "Romance",
-            "https://placehold.co/600x900/3d202d/ffffff?text=Campus+Days",
+            "https://placehold.co/800x1100/3d202d/ffffff?text=Campus+Days",
             "Friendship, love and college life."
         ),
 
         MediaStory(
             "The Hidden Room",
             "Thriller",
-            "https://placehold.co/600x900/20252c/ffffff?text=Hidden+Room",
+            "https://placehold.co/800x1100/20252c/ffffff?text=Hidden+Room",
             "Nobody knows what is behind the door."
         )
     )
@@ -336,10 +334,8 @@ fun TopHeader() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                start = 20.dp,
-                end = 20.dp,
-                top = 18.dp,
-                bottom = 14.dp
+                horizontal = 20.dp,
+                vertical = 16.dp
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -348,24 +344,64 @@ fun TopHeader() {
             modifier = Modifier.weight(1f)
         ) {
 
-            Text(
-                text = "MEDIA TV",
-                color = TextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 1.2.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0xFF7C3AED),
+                                    Color(0xFFEC4899)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Text(
+                        text = "▶",
+                        color = Color.White,
+                        fontSize = 14.sp
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.width(9.dp)
+                )
+
+                Text(
+                    text = "MEDIA",
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Text(
+                    text = " TV",
+                    color = Color(0xFFA78BFA),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
 
             Text(
                 text = "Stories worth watching",
                 color = TextSecondary,
-                fontSize = 11.sp
+                fontSize = 10.sp,
+                modifier = Modifier.padding(
+                    start = 43.dp
+                )
             )
         }
 
         Surface(
-            modifier = Modifier.size(40.dp),
-            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.size(42.dp),
+            shape = CircleShape,
             color = CardDark
         ) {
 
@@ -375,8 +411,61 @@ fun TopHeader() {
 
                 Text(
                     text = "⌕",
-                    color = TextPrimary,
+                    color = Color.White,
                     fontSize = 22.sp
+                )
+            }
+        }
+    }
+}
+
+/* ================= CATEGORY CHIPS ================= */
+
+@Composable
+fun CategoryChips() {
+
+    val categories = listOf(
+        "All",
+        "Drama",
+        "Mystery",
+        "Romance",
+        "Thriller",
+        "Comedy"
+    )
+
+    Row(
+        modifier = Modifier
+            .horizontalScroll(
+                rememberScrollState()
+            )
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        categories.forEachIndexed { index, category ->
+
+            Surface(
+                shape = RoundedCornerShape(50.dp),
+                color =
+                    if (index == 0)
+                        Accent
+                    else
+                        CardDark
+            ) {
+
+                Text(
+                    text = category,
+                    color =
+                        if (index == 0)
+                            Color.White
+                        else
+                            TextSecondary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(
+                        horizontal = 15.dp,
+                        vertical = 9.dp
+                    )
                 )
             }
         }
@@ -395,7 +484,7 @@ fun HeroBanner(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .height(420.dp)
+            .height(410.dp)
             .clip(RoundedCornerShape(24.dp))
     ) {
 
@@ -411,7 +500,7 @@ fun HeroBanner(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
+                        listOf(
                             Color.Transparent,
                             Color.Transparent,
                             Color(0xFF07070A)
@@ -429,7 +518,7 @@ fun HeroBanner(
             Text(
                 text = "MEDIA TV ORIGINAL",
                 color = Color(0xFFC4B5FD),
-                fontSize = 10.sp,
+                fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
             )
@@ -441,9 +530,41 @@ fun HeroBanner(
             Text(
                 text = story.title,
                 color = Color.White,
-                fontSize = 30.sp,
+                fontSize = 29.sp,
                 fontWeight = FontWeight.ExtraBold
             )
+
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Text(
+                    text = "2026",
+                    color = TextSecondary,
+                    fontSize = 10.sp
+                )
+
+                Text(
+                    text = "  •  ",
+                    color = TextSecondary
+                )
+
+                Text(
+                    text = story.category,
+                    color = TextSecondary,
+                    fontSize = 10.sp
+                )
+
+                Text(
+                    text = "  •  4K",
+                    color = Color(0xFFA78BFA),
+                    fontSize = 10.sp
+                )
+            }
 
             Spacer(
                 modifier = Modifier.height(7.dp)
@@ -452,12 +573,12 @@ fun HeroBanner(
             Text(
                 text = story.description,
                 color = Color(0xFFD0D0D5),
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 maxLines = 2
             )
 
             Spacer(
-                modifier = Modifier.height(15.dp)
+                modifier = Modifier.height(14.dp)
             )
 
             Button(
@@ -466,12 +587,13 @@ fun HeroBanner(
                     containerColor = Color.White,
                     contentColor = Color.Black
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(11.dp)
             ) {
 
                 Text(
                     text = "▶  Watch Now",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp
                 )
             }
         }
@@ -490,7 +612,7 @@ fun StorySection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 26.dp)
+            .padding(top = 28.dp)
     ) {
 
         Row(
@@ -509,7 +631,7 @@ fun StorySection(
             )
 
             Text(
-                text = "See all",
+                text = "See all  ›",
                 color = Color(0xFFA78BFA),
                 fontSize = 11.sp
             )
@@ -551,20 +673,43 @@ fun StoryPoster(
 
     Column(
         modifier = Modifier
-            .width(132.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(Background)
+            .width(138.dp)
+            .clickable {
+                onClick()
+            }
     ) {
 
-        AsyncImage(
-            model = story.image,
-            contentDescription = story.title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(188.dp)
-                .clip(RoundedCornerShape(14.dp)),
-            contentScale = ContentScale.Crop
-        )
+        Box {
+
+            AsyncImage(
+                model = story.image,
+                contentDescription = story.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(195.dp)
+                    .clip(RoundedCornerShape(15.dp)),
+                contentScale = ContentScale.Crop
+            )
+
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xAA000000))
+                    .padding(
+                        horizontal = 7.dp,
+                        vertical = 4.dp
+                    )
+            ) {
+
+                Text(
+                    text = story.category.uppercase(),
+                    color = Color.White,
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
 
         Spacer(
             modifier = Modifier.height(8.dp)
@@ -576,10 +721,7 @@ fun StoryPoster(
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(
-                horizontal = 2.dp
-            )
+            overflow = TextOverflow.Ellipsis
         )
 
         Spacer(
@@ -587,20 +729,11 @@ fun StoryPoster(
         )
 
         Text(
-            text = story.category,
-            color = TextSecondary,
-            fontSize = 10.sp,
-            modifier = Modifier.padding(
-                horizontal = 2.dp
-            )
+            text = "▶  Watch now",
+            color = Color(0xFFA78BFA),
+            fontSize = 9.sp
         )
     }
-
-    Box(
-        modifier = Modifier
-            .width(132.dp)
-            .height(0.dp)
-    )
 }
 
 /* ================= STORY DETAILS ================= */
@@ -608,7 +741,7 @@ fun StoryPoster(
 @Composable
 fun StoryDetailsScreen(
     story: MediaStory,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     onBack: () -> Unit,
     onEpisodeClick: (Episode) -> Unit
 ) {
@@ -643,7 +776,7 @@ fun StoryDetailsScreen(
                         .background(
                             Brush.verticalGradient(
                                 listOf(
-                                    Color(0xAA07070A),
+                                    Color(0x9907070A),
                                     Color.Transparent,
                                     Color(0xFF07070A)
                                 )
@@ -657,13 +790,13 @@ fun StoryDetailsScreen(
                         .align(Alignment.TopStart)
                         .padding(
                             start = 18.dp,
-                            top = 20.dp
+                            top = 18.dp
                         )
                         .clickable {
                             onBack()
                         },
                     color = Color.White,
-                    fontSize = 38.sp
+                    fontSize = 40.sp
                 )
 
                 Column(
@@ -680,7 +813,7 @@ fun StoryDetailsScreen(
                     )
 
                     Spacer(
-                        modifier = Modifier.height(6.dp)
+                        modifier = Modifier.height(5.dp)
                     )
 
                     Text(
@@ -701,10 +834,6 @@ fun StoryDetailsScreen(
                 )
             ) {
 
-                Spacer(
-                    modifier = Modifier.height(10.dp)
-                )
-
                 Text(
                     text = story.description,
                     color = TextSecondary,
@@ -713,7 +842,7 @@ fun StoryDetailsScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(18.dp)
+                    modifier = Modifier.height(17.dp)
                 )
 
                 Button(
@@ -746,7 +875,7 @@ fun StoryDetailsScreen(
                 )
 
                 Spacer(
-                    modifier = Modifier.height(12.dp)
+                    modifier = Modifier.height(10.dp)
                 )
             }
         }
@@ -763,7 +892,7 @@ fun StoryDetailsScreen(
     }
 }
 
-/* ================= EPISODE CARD ================= */
+/* ================= EPISODE ================= */
 
 @Composable
 fun EpisodeCard(
@@ -778,7 +907,7 @@ fun EpisodeCard(
                 horizontal = 20.dp,
                 vertical = 6.dp
             )
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(15.dp))
             .background(CardDark)
             .clickable {
                 onClick()
@@ -789,8 +918,8 @@ fun EpisodeCard(
 
         Box(
             modifier = Modifier
-                .size(72.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .size(76.dp)
+                .clip(RoundedCornerShape(11.dp))
                 .background(
                     Brush.linearGradient(
                         listOf(
@@ -805,7 +934,7 @@ fun EpisodeCard(
             Text(
                 text = "▶",
                 color = Color.White,
-                fontSize = 20.sp
+                fontSize = 21.sp
             )
         }
 
@@ -818,9 +947,9 @@ fun EpisodeCard(
         ) {
 
             Text(
-                text = "Episode ${episode.number}",
+                text = "EPISODE ${episode.number}",
                 color = Color(0xFFA78BFA),
-                fontSize = 10.sp,
+                fontSize = 9.sp,
                 fontWeight = FontWeight.Bold
             )
 
@@ -851,17 +980,17 @@ fun EpisodeCard(
         Text(
             text = episode.duration,
             color = TextSecondary,
-            fontSize = 10.sp
+            fontSize = 9.sp
         )
     }
 }
 
-/* ================= VIDEO PLAYER ================= */
+/* ================= PLAYER ================= */
 
 @Composable
 fun VideoPlayerScreen(
     episode: Episode,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     onBack: () -> Unit
 ) {
 
@@ -873,11 +1002,11 @@ fun VideoPlayerScreen(
             .build()
             .apply {
 
-                val mediaItem = MediaItem.fromUri(
-                    Uri.parse(episode.videoUrl)
+                setMediaItem(
+                    MediaItem.fromUri(
+                        Uri.parse(episode.videoUrl)
+                    )
                 )
-
-                setMediaItem(mediaItem)
 
                 prepare()
 
@@ -917,10 +1046,9 @@ fun VideoPlayerScreen(
             Text(
                 text = "‹",
                 modifier = Modifier
-                    .align(Alignment.TopStart)
                     .padding(
                         start = 16.dp,
-                        top = 16.dp
+                        top = 15.dp
                     )
                     .clickable {
                         onBack()
@@ -938,14 +1066,14 @@ fun VideoPlayerScreen(
         ) {
 
             Text(
-                text = "Episode ${episode.number}",
+                text = "EPISODE ${episode.number}",
                 color = Color(0xFFA78BFA),
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(
-                modifier = Modifier.height(7.dp)
+                modifier = Modifier.height(6.dp)
             )
 
             Text(
@@ -965,17 +1093,6 @@ fun VideoPlayerScreen(
                 fontSize = 13.sp,
                 lineHeight = 20.sp
             )
-
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
-
-            Text(
-                text = "More Episodes",
-                color = TextPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
@@ -984,11 +1101,11 @@ fun VideoPlayerScreen(
 
 @Composable
 fun SearchScreen(
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
     onStoryClick: (MediaStory) -> Unit
 ) {
 
-    val story = sampleStories()[0]
+    val stories = sampleStories()
 
     Column(
         modifier = modifier
@@ -1023,11 +1140,11 @@ fun SearchScreen(
         }
 
         Spacer(
-            modifier = Modifier.height(30.dp)
+            modifier = Modifier.height(28.dp)
         )
 
         Text(
-            text = "Featured",
+            text = "Popular",
             color = TextPrimary,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold
@@ -1037,12 +1154,20 @@ fun SearchScreen(
             modifier = Modifier.height(14.dp)
         )
 
-        StoryPoster(
-            story = story,
-            onClick = {
-                onStoryClick(story)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            stories.take(2).forEach {
+
+                StoryPoster(
+                    story = it,
+                    onClick = {
+                        onStoryClick(it)
+                    }
+                )
             }
-        )
+        }
     }
 }
 
@@ -1050,7 +1175,7 @@ fun SearchScreen(
 
 @Composable
 fun LibraryScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
 
     Column(
@@ -1068,13 +1193,13 @@ fun LibraryScreen(
         )
 
         Spacer(
-            modifier = Modifier.height(12.dp)
+            modifier = Modifier.height(10.dp)
         )
 
         Text(
-            text = "Your saved stories will appear here.",
+            text = "Save stories and continue watching anytime.",
             color = TextSecondary,
-            fontSize = 13.sp
+            fontSize = 12.sp
         )
     }
 }
@@ -1083,7 +1208,7 @@ fun LibraryScreen(
 
 @Composable
 fun ProfileScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
 
     Column(
@@ -1117,12 +1242,12 @@ fun ProfileScreen(
 
                 Box(
                     modifier = Modifier
-                        .size(55.dp)
-                        .clip(RoundedCornerShape(18.dp))
+                        .size(56.dp)
+                        .clip(CircleShape)
                         .background(
                             Brush.linearGradient(
                                 listOf(
-                                    Accent,
+                                    Color(0xFF7C3AED),
                                     Color(0xFFEC4899)
                                 )
                             )
@@ -1179,11 +1304,10 @@ fun MediaBottomNavigation(
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .padding(
-                    horizontal = 12.dp,
+                    horizontal = 8.dp,
                     vertical = 8.dp
                 ),
-            horizontalArrangement =
-                Arrangement.SpaceAround
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
 
             BottomItem(
@@ -1236,10 +1360,11 @@ fun BottomItem(
     Column(
         modifier = Modifier
             .width(72.dp)
-            .clickable(onClick = onClick)
+            .clickable {
+                onClick()
+            }
             .padding(vertical = 5.dp),
-        horizontalAlignment =
-            Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Text(
