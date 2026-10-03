@@ -30,6 +30,7 @@ android {
 }
 
 dependencies {
+
     implementation("androidx.activity:activity-compose:1.10.0")
 
     implementation("androidx.compose.ui:ui:1.7.6")
@@ -38,7 +39,10 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.7.0")
 
+    // Media TV video player
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
+
+    // Media TV API networking
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
 }
