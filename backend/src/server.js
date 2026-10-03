@@ -10,66 +10,78 @@ const { Pool } = pg;
 
 const pool = process.env.DATABASE_URL
   ? new Pool({
-      connectionString: process.env.DATABASE_URL
+      connectionString: process.env.DATABASE_URL,
+      ssl:
+        process.env.NODE_ENV === "production"
+          ? { rejectUnauthorized: false }
+          : false
     })
   : null;
 
 app.use(cors());
 app.use(express.json());
 
-/*
- * =========================
- * MEDIA TV HEALTH
- * =========================
- */
+/* =========================================================
+   HEALTH
+   ========================================================= */
 
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
-    service: "media-tv-backend"
+    service: "media-tv-backend",
+    version: "1.0.0"
   });
 });
 
-/*
- * =========================
- * GET ALL STORIES
- * =========================
- */
+/* =========================================================
+   STORIES
+   ========================================================= */
 
 app.get("/api/stories", async (req, res) => {
 
-  // Development fallback
-  // Database connect na hone par sample data milega.
   if (!pool) {
     return res.json([
       {
         id: 1,
         title: "The Last Letter",
-        description: "A sample short story series for Media TV.",
+        description:
+          "A mysterious letter changes everything.",
         thumbnail_url: "",
         category: "Drama"
+      },
+      {
+        id: 2,
+        title: "Midnight Mystery",
+        description:
+          "A strange mystery begins at midnight.",
+        thumbnail_url: "",
+        category: "Mystery"
       }
     ]);
   }
 
   try {
 
-    const result = await pool.query(
-      `SELECT
-          id,
-          title,
-          description,
-          thumbnail_url,
-          category
-       FROM stories
-       ORDER BY created_at DESC`
-    );
+    const result = await pool.query(`
+      SELECT
+        id,
+        title,
+        description,
+        thumbnail_url,
+        category,
+        created_at
+      FROM stories
+      ORDER BY created_at DESC
+    `);
 
     res.json(result.rows);
 
   } catch (error) {
 
-    console.error("Stories API error:", error);
+    console.error(
+      "GET /api/stories error:",
+      error
+    );
 
     res.status(500).json({
       error: "Database error"
@@ -77,75 +89,126 @@ app.get("/api/stories", async (req, res) => {
   }
 });
 
-/*
- * =========================
- * GET STORY EPISODES
- * =========================
- */
+/* =========================================================
+   SINGLE STORY
+   ========================================================= */
 
-app.get("/api/stories/:id/episodes", async (req, res) => {
+app.get("/api/stories/:id", async (req, res) => {
 
-  // Development fallback
   if (!pool) {
-    return res.json([
-      {
-        id: 1,
-        story_id: Number(req.params.id),
-        episode_number: 1,
-        title: "Episode 1",
-        description: "Sample episode for Media TV.",
-        video_url: "",
-        duration_seconds: 300
-      },
-      {
-        id: 2,
-        story_id: Number(req.params.id),
-        episode_number: 2,
-        title: "Episode 2",
-        description: "Second sample episode.",
-        video_url: "",
-        duration_seconds: 300
-      }
-    ]);
+    return res.status(404).json({
+      error: "Story not found"
+    });
   }
 
   try {
 
     const result = await pool.query(
-      `SELECT
+      `
+      SELECT
+        id,
+        title,
+        description,
+        thumbnail_url,
+        category,
+        created_at
+      FROM stories
+      WHERE id = $1
+      `,
+      [req.params.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Story not found"
+      });
+    }
+
+    res.json(result.rows[0]);
+
+  } catch (error) {
+
+    console.error(
+      "GET /api/stories/:id error:",
+      error
+    );
+
+    res.status(500).json({
+      error: "Database error"
+    });
+  }
+});
+
+/* =========================================================
+   EPISODES
+   ========================================================= */
+
+app.get(
+  "/api/stories/:id/episodes",
+  async (req, res) => {
+
+    if (!pool) {
+      return res.json([]);
+    }
+
+    try {
+
+      const result = await pool.query(
+        `
+        SELECT
           id,
           story_id,
           episode_number,
           title,
           description,
           video_url,
-          duration_seconds
-       FROM episodes
-       WHERE story_id = $1
-       ORDER BY episode_number`,
-      [req.params.id]
-    );
+          duration_seconds,
+          created_at
+        FROM episodes
+        WHERE story_id = $1
+        ORDER BY episode_number ASC
+        `,
+        [req.params.id]
+      );
 
-    res.json(result.rows);
+      res.json(result.rows);
 
-  } catch (error) {
+    } catch (error) {
 
-    console.error("Episodes API error:", error);
+      console.error(
+        "GET episodes error:",
+        error
+      );
 
-    res.status(500).json({
-      error: "Database error"
-    });
+      res.status(500).json({
+        error: "Database error"
+      });
+    }
   }
+);
+
+/* =========================================================
+   404
+   ========================================================= */
+
+app.use((req, res) => {
+
+  res.status(404).json({
+    error: "API endpoint not found"
+  });
 });
 
-/*
- * =========================
- * SERVER
- * =========================
- */
+/* =========================================================
+   SERVER
+   ========================================================= */
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+  Number(process.env.PORT) || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Media TV API running on port ${PORT}`);
+
+  console.log(
+    `Media TV API running on port ${PORT}`
+  );
+
 });
