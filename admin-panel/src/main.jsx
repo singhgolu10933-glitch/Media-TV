@@ -1,124 +1,192 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getHealth,
+  getStories,
+  getEpisodes
+} from "./api";
 import "./style.css";
 
-const initialStories = [
+const demoStories = [
   {
     id: 1,
     title: "The Last Letter",
-    description: "A mysterious letter changes everything.",
+    description:
+      "A mysterious letter changes everything.",
     category: "Drama",
-    thumbnail: "",
-    status: "Published",
+    thumbnail_url: "",
     featured: true
-  },
-  {
-    id: 2,
-    title: "Midnight Secret",
-    description: "A secret hidden after midnight.",
-    category: "Mystery",
-    thumbnail: "",
-    status: "Published",
-    featured: false
-  },
-  {
-    id: 3,
-    title: "Broken Promise",
-    description: "A promise that was never forgotten.",
-    category: "Romance",
-    thumbnail: "",
-    status: "Draft",
-    featured: false
   }
 ];
 
 function App() {
-  const [active, setActive] = useState("dashboard");
+  const [activePage, setActivePage] = useState("dashboard");
+  const [stories, setStories] = useState([]);
+  const [health, setHealth] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  async function loadInitialData() {
+    setLoading(true);
+
+    try {
+      const [storyData, healthData] =
+        await Promise.all([
+          getStories(),
+          getHealth()
+        ]);
+
+      setStories(
+        Array.isArray(storyData)
+          ? storyData
+          : demoStories
+      );
+
+      setHealth(healthData);
+    } catch (error) {
+      console.error(
+        "Media TV API error:",
+        error
+      );
+
+      setStories(demoStories);
+      setHealth({
+        ok: false,
+        service: "media-tv-backend"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="admin-app">
-
+    <div className="app-shell">
       <Sidebar
-        active={active}
-        setActive={setActive}
+        activePage={activePage}
+        setActivePage={setActivePage}
       />
 
       <main className="main-content">
+        <Topbar
+          activePage={activePage}
+          health={health}
+        />
 
-        <TopBar />
-
-        {active === "dashboard" && (
-          <Dashboard />
-        )}
-
-        {active === "stories" && (
-          <StoriesManager />
-        )}
-
-        {active === "episodes" && (
-          <EpisodesManager />
-        )}
-
-        {active === "categories" && (
-          <SimplePage
-            title="Categories"
-            description="Manage Media TV content categories."
+        {activePage === "dashboard" && (
+          <Dashboard
+            stories={stories}
+            loading={loading}
+            health={health}
           />
         )}
 
-        {active === "users" && (
-          <SimplePage
-            title="Users"
-            description="Manage registered Media TV users."
+        {activePage === "stories" && (
+          <StoriesManager
+            stories={stories}
+            setStories={setStories}
+            loading={loading}
+            reload={loadInitialData}
           />
         )}
 
-        {active === "analytics" && (
+        {activePage === "episodes" && (
+          <EpisodesManager
+            stories={stories}
+          />
+        )}
+
+        {activePage === "analytics" && (
           <Analytics />
         )}
 
-        {active === "ads" && (
-          <SimplePage
+        {activePage === "categories" && (
+          <PlaceholderPage
+            title="Categories"
+            description="Manage Media TV content categories."
+            icon="▦"
+          />
+        )}
+
+        {activePage === "users" && (
+          <PlaceholderPage
+            title="Users"
+            description="Manage registered Media TV users."
+            icon="◉"
+          />
+        )}
+
+        {activePage === "ads" && (
+          <PlaceholderPage
             title="Ads & Monetization"
-            description="Manage advertising and monetization settings."
+            description="Manage advertisements, placements and monetization."
+            icon="◈"
           />
         )}
 
-        {active === "settings" && (
-          <SimplePage
+        {activePage === "settings" && (
+          <PlaceholderPage
             title="Settings"
-            description="Manage Media TV platform settings."
+            description="Configure Media TV platform settings."
+            icon="⚙"
           />
         )}
-
       </main>
-
     </div>
   );
 }
 
-
-/* ============================================
-   SIDEBAR
-============================================ */
-
-function Sidebar({ active, setActive }) {
-
+function Sidebar({
+  activePage,
+  setActivePage
+}) {
   const menu = [
-    ["dashboard", "Dashboard", "⌂"],
-    ["stories", "Stories", "▣"],
-    ["episodes", "Episodes", "▶"],
-    ["categories", "Categories", "◈"],
-    ["users", "Users", "♙"],
-    ["analytics", "Analytics", "⌁"],
-    ["ads", "Ads & Monetization", "◉"],
-    ["settings", "Settings", "⚙"]
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: "⌂"
+    },
+    {
+      id: "stories",
+      label: "Stories",
+      icon: "▣"
+    },
+    {
+      id: "episodes",
+      label: "Episodes",
+      icon: "▶"
+    },
+    {
+      id: "categories",
+      label: "Categories",
+      icon: "▦"
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: "◉"
+    },
+    {
+      id: "analytics",
+      label: "Analytics",
+      icon: "⌁"
+    },
+    {
+      id: "ads",
+      label: "Ads & Revenue",
+      icon: "◈"
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: "⚙"
+    }
   ];
 
   return (
     <aside className="sidebar">
-
       <div className="brand">
-
         <div className="brand-logo">
           ▶
         </div>
@@ -127,46 +195,37 @@ function Sidebar({ active, setActive }) {
           <strong>Media TV</strong>
           <span>ADMIN PANEL</span>
         </div>
-
       </div>
 
+      <div className="sidebar-label">
+        MANAGEMENT
+      </div>
 
-      <nav className="sidebar-nav">
-
-        <div className="nav-label">
-          MANAGEMENT
-        </div>
-
-        {menu.map(([id, label, icon]) => (
-
+      <nav>
+        {menu.map((item) => (
           <button
-            key={id}
-            className={`nav-item ${
-              active === id ? "active" : ""
-            }`}
-            onClick={() => setActive(id)}
+            key={item.id}
+            className={
+              activePage === item.id
+                ? "nav-item active"
+                : "nav-item"
+            }
+            onClick={() =>
+              setActivePage(item.id)
+            }
           >
-
             <span className="nav-icon">
-              {icon}
+              {item.icon}
             </span>
 
-            <span>
-              {label}
-            </span>
-
+            <span>{item.label}</span>
           </button>
-
         ))}
-
       </nav>
 
-
       <div className="sidebar-bottom">
-
-        <div className="admin-user">
-
-          <div className="admin-avatar">
+        <div className="admin-profile">
+          <div className="avatar">
             A
           </div>
 
@@ -174,273 +233,397 @@ function Sidebar({ active, setActive }) {
             <strong>Administrator</strong>
             <span>Media TV</span>
           </div>
-
         </div>
-
       </div>
-
     </aside>
   );
 }
 
-
-/* ============================================
-   TOP BAR
-============================================ */
-
-function TopBar() {
+function Topbar({
+  activePage,
+  health
+}) {
+  const titles = {
+    dashboard: "Dashboard",
+    stories: "Stories",
+    episodes: "Episodes",
+    categories: "Categories",
+    users: "Users",
+    analytics: "Analytics",
+    ads: "Ads & Revenue",
+    settings: "Settings"
+  };
 
   return (
     <header className="topbar">
-
       <div>
-
-        <div className="topbar-title">
+        <div className="breadcrumb">
           Media TV
+          <span>/</span>
+          {titles[activePage]}
         </div>
 
-        <div className="topbar-subtitle">
-          Content management dashboard
-        </div>
-
+        <h1>
+          {titles[activePage]}
+        </h1>
       </div>
 
+      <div className="topbar-actions">
+        <div
+          className={
+            health?.ok
+              ? "api-status online"
+              : "api-status offline"
+          }
+        >
+          <span className="status-dot" />
 
-      <div className="topbar-right">
-
-        <div className="live-status">
-          <span />
-          System Online
+          {health?.ok
+            ? "API Online"
+            : "API Offline"}
         </div>
+
+        <button className="icon-button">
+          🔔
+        </button>
 
         <div className="top-avatar">
           A
         </div>
-
       </div>
-
     </header>
   );
 }
 
+function Dashboard({
+  stories,
+  loading,
+  health
+}) {
+  const totalStories =
+    stories.length;
 
-/* ============================================
-   DASHBOARD
-============================================ */
-
-function Dashboard() {
-
-  const stats = [
-    ["Total Stories", "128", "+12%"],
-    ["Episodes", "846", "+18%"],
-    ["Users", "24.8K", "+9.4%"],
-    ["Watch Time", "186K h", "+22%"]
-  ];
+  const categories = new Set(
+    stories.map(
+      (story) => story.category
+    )
+  ).size;
 
   return (
     <section className="page">
-
-      <div className="page-heading">
-
+      <div className="welcome-card">
         <div>
-          <h1>Dashboard</h1>
+          <span className="eyebrow">
+            MEDIA TV CONTROL CENTER
+          </span>
+
+          <h2>
+            Welcome back, Admin
+          </h2>
 
           <p>
-            Overview of your Media TV platform.
+            Manage your stories, episodes,
+            users and Media TV platform
+            from one place.
           </p>
         </div>
 
-        <button className="primary-button">
-          + New Story
-        </button>
-
+        <div className="welcome-icon">
+          ▶
+        </div>
       </div>
-
 
       <div className="stats-grid">
+        <StatCard
+          title="Total Stories"
+          value={
+            loading
+              ? "..."
+              : totalStories
+          }
+          change="From database"
+          icon="▣"
+        />
 
-        {stats.map(([title, value, change]) => (
+        <StatCard
+          title="Categories"
+          value={
+            loading
+              ? "..."
+              : categories
+          }
+          change="Active categories"
+          icon="▦"
+        />
 
-          <div className="stat-card" key={title}>
+        <StatCard
+          title="API Status"
+          value={
+            health?.ok
+              ? "Online"
+              : "Offline"
+          }
+          change={
+            health?.version
+              ? `v${health.version}`
+              : "Backend"
+          }
+          icon="⌁"
+        />
 
-            <span className="stat-title">
-              {title}
-            </span>
-
-            <strong className="stat-value">
-              {value}
-            </strong>
-
-            <span className="stat-change">
-              {change}
-            </span>
-
-          </div>
-
-        ))}
-
+        <StatCard
+          title="Users"
+          value="0"
+          change="Ready for users"
+          icon="◉"
+        />
       </div>
-
 
       <div className="dashboard-grid">
-
-        <div className="panel">
-
+        <div className="panel-card">
           <div className="panel-header">
-
             <div>
-              <h2>Content Overview</h2>
-              <p>Stories and episodes activity.</p>
+              <span className="panel-kicker">
+                CONTENT
+              </span>
+
+              <h3>
+                Recent Stories
+              </h3>
             </div>
 
-            <span className="panel-badge">
-              30 Days
+            <span className="panel-link">
+              Live API
             </span>
-
           </div>
 
-
-          <div className="chart">
-
-            <div className="chart-bars">
-
-              {[35, 48, 42, 62, 55, 73, 66, 81, 70, 88, 76, 94].map(
-                (height, index) => (
-
+          <div className="recent-list">
+            {loading ? (
+              <div className="empty-state">
+                Loading stories...
+              </div>
+            ) : stories.length === 0 ? (
+              <div className="empty-state">
+                No stories found.
+              </div>
+            ) : (
+              stories
+                .slice(0, 5)
+                .map((story) => (
                   <div
-                    className="chart-bar"
-                    style={{ height: `${height}%` }}
-                    key={index}
-                  />
+                    className="recent-item"
+                    key={story.id}
+                  >
+                    <StoryThumb
+                      story={story}
+                    />
 
-                )
-              )}
+                    <div className="recent-info">
+                      <strong>
+                        {story.title}
+                      </strong>
 
-            </div>
+                      <span>
+                        {story.category ||
+                          "Uncategorized"}
+                      </span>
+                    </div>
 
+                    <span className="item-arrow">
+                      →
+                    </span>
+                  </div>
+                ))
+            )}
           </div>
-
         </div>
 
-
-        <div className="panel">
-
+        <div className="panel-card">
           <div className="panel-header">
-
             <div>
-              <h2>Recent Activity</h2>
-              <p>Latest platform activity.</p>
+              <span className="panel-kicker">
+                PLATFORM
+              </span>
+
+              <h3>
+                System Overview
+              </h3>
             </div>
-
           </div>
 
-
-          <div className="activity-list">
-
-            <Activity
-              title="New story published"
-              subtitle="The Last Letter"
-              time="5 min ago"
+          <div className="system-list">
+            <SystemRow
+              name="Backend API"
+              status={
+                health?.ok
+                  ? "Operational"
+                  : "Offline"
+              }
+              active={Boolean(
+                health?.ok
+              )}
             />
 
-            <Activity
-              title="Episode uploaded"
-              subtitle="Midnight Secret · EP 4"
-              time="28 min ago"
+            <SystemRow
+              name="PostgreSQL"
+              status={
+                health?.ok
+                  ? "Connected"
+                  : "Unknown"
+              }
+              active={Boolean(
+                health?.ok
+              )}
             />
 
-            <Activity
-              title="New user registered"
-              subtitle="User #24801"
-              time="1 hour ago"
+            <SystemRow
+              name="Stories API"
+              status="Ready"
+              active
             />
 
-            <Activity
-              title="Story updated"
-              subtitle="Broken Promise"
-              time="2 hours ago"
+            <SystemRow
+              name="Episodes API"
+              status="Ready"
+              active
             />
-
           </div>
-
         </div>
-
       </div>
-
     </section>
   );
 }
 
+function StatCard({
+  title,
+  value,
+  change,
+  icon
+}) {
+  return (
+    <div className="stat-card">
+      <div className="stat-top">
+        <span className="stat-title">
+          {title}
+        </span>
 
-/* ============================================
-   STORIES MANAGER
-============================================ */
+        <span className="stat-icon">
+          {icon}
+        </span>
+      </div>
 
-function StoriesManager() {
+      <strong className="stat-value">
+        {value}
+      </strong>
 
-  const [stories, setStories] = useState(initialStories);
+      <span className="stat-change">
+        {change}
+      </span>
+    </div>
+  );
+}
 
-  const [search, setSearch] = useState("");
+function SystemRow({
+  name,
+  status,
+  active
+}) {
+  return (
+    <div className="system-row">
+      <div>
+        <strong>{name}</strong>
+      </div>
 
-  const [showModal, setShowModal] = useState(false);
+      <span
+        className={
+          active
+            ? "system-status active"
+            : "system-status"
+        }
+      >
+        <span />
+        {status}
+      </span>
+    </div>
+  );
+}
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    category: "Drama",
-    thumbnail: "",
-    status: "Draft",
-    featured: false
-  });
+function StoriesManager({
+  stories,
+  setStories,
+  loading,
+  reload
+}) {
+  const [search, setSearch] =
+    useState("");
 
+  const [showAdd, setShowAdd] =
+    useState(false);
 
-  const filteredStories = useMemo(() => {
+  const [newStory, setNewStory] =
+    useState({
+      title: "",
+      description: "",
+      category: ""
+    });
 
-    return stories.filter((story) =>
-      story.title
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    );
+  const filteredStories =
+    useMemo(() => {
+      const value =
+        search.trim().toLowerCase();
 
-  }, [stories, search]);
+      if (!value) {
+        return stories;
+      }
 
+      return stories.filter(
+        (story) =>
+          story.title
+            ?.toLowerCase()
+            .includes(value) ||
+          story.category
+            ?.toLowerCase()
+            .includes(value)
+      );
+    }, [stories, search]);
 
-  function createStory(event) {
-
+  function addLocalStory(event) {
     event.preventDefault();
 
-    if (!form.title.trim()) {
+    if (!newStory.title.trim()) {
       return;
     }
 
-    const newStory = {
-      id: Date.now(),
-      ...form
+    const story = {
+      id: `local-${Date.now()}`,
+      title: newStory.title,
+      description:
+        newStory.description,
+      category:
+        newStory.category ||
+        "Drama",
+      thumbnail_url: "",
+      featured: false
     };
 
     setStories([
-      newStory,
+      story,
       ...stories
     ]);
 
-    setForm({
+    setNewStory({
       title: "",
       description: "",
-      category: "Drama",
-      thumbnail: "",
-      status: "Draft",
-      featured: false
+      category: ""
     });
 
-    setShowModal(false);
+    setShowAdd(false);
   }
 
-
   function deleteStory(id) {
-
     const confirmed =
       window.confirm(
-        "Delete this story?"
+        "Remove this story from the admin view?"
       );
 
     if (!confirmed) {
@@ -449,1069 +632,574 @@ function StoriesManager() {
 
     setStories(
       stories.filter(
-        (story) => story.id !== id
+        (story) =>
+          story.id !== id
       )
     );
   }
-
-
-  function toggleFeatured(id) {
-
-    setStories(
-      stories.map((story) =>
-        story.id === id
-          ? {
-              ...story,
-              featured: !story.featured
-            }
-          : story
-      )
-    );
-  }
-
 
   return (
     <section className="page">
-
-      <div className="page-heading">
-
+      <div className="page-toolbar">
         <div>
-          <h1>Stories</h1>
+          <span className="panel-kicker">
+            CONTENT MANAGEMENT
+          </span>
+
+          <h2>
+            Stories
+          </h2>
 
           <p>
-            Manage all stories available on Media TV.
+            Stories are loaded directly
+            from the Media TV backend.
           </p>
         </div>
 
         <button
           className="primary-button"
-          onClick={() => setShowModal(true)}
+          onClick={() =>
+            setShowAdd(true)
+          }
         >
           + Add Story
         </button>
-
       </div>
 
+      <div className="table-card">
+        <div className="table-toolbar">
+          <div className="search-box">
+            <span>⌕</span>
 
-      <div className="panel">
-
-        <div className="panel-header">
-
-          <div>
-            <h2>All Stories</h2>
-
-            <p>
-              {stories.length} stories
-            </p>
+            <input
+              value={search}
+              onChange={(event) =>
+                setSearch(
+                  event.target.value
+                )
+              }
+              placeholder="Search stories..."
+            />
           </div>
 
-
-          <input
-            className="search-input"
-            placeholder="Search stories..."
-            value={search}
-            onChange={(event) =>
-              setSearch(event.target.value)
-            }
-          />
-
+          <button
+            className="secondary-button"
+            onClick={reload}
+          >
+            ↻ Refresh
+          </button>
         </div>
 
-
-        <div className="story-table">
-
-          <div className="story-row story-header">
-
-            <span>STORY</span>
-            <span>CATEGORY</span>
-            <span>STATUS</span>
-            <span>FEATURED</span>
-            <span>ACTIONS</span>
-
+        {loading ? (
+          <div className="empty-state large">
+            Loading stories from API...
           </div>
+        ) : filteredStories.length ===
+          0 ? (
+          <div className="empty-state large">
+            No stories found.
+          </div>
+        ) : (
+          <div className="story-table">
+            <div className="table-head">
+              <span>STORY</span>
+              <span>CATEGORY</span>
+              <span>STATUS</span>
+              <span>ACTIONS</span>
+            </div>
 
-
-          {filteredStories.map((story) => (
-
-            <div
-              className="story-row"
-              key={story.id}
-            >
-
-              <div className="story-main">
-
-                <div className="story-thumb">
-
-                  {story.thumbnail ? (
-                    <img
-                      src={story.thumbnail}
-                      alt=""
+            {filteredStories.map(
+              (story) => (
+                <div
+                  className="table-row"
+                  key={story.id}
+                >
+                  <div className="story-cell">
+                    <StoryThumb
+                      story={story}
                     />
-                  ) : (
-                    <span>▶</span>
-                  )}
 
-                </div>
+                    <div>
+                      <strong>
+                        {story.title}
+                      </strong>
 
+                      <span>
+                        ID: {story.id}
+                      </span>
+                    </div>
+                  </div>
 
-                <div>
-
-                  <strong>
-                    {story.title}
-                  </strong>
-
-                  <span>
-                    {story.description}
+                  <span className="category-badge">
+                    {story.category ||
+                      "Uncategorized"}
                   </span>
 
+                  <span className="status-badge">
+                    Published
+                  </span>
+
+                  <div className="row-actions">
+                    <button
+                      className="small-button"
+                      title="Delete"
+                      onClick={() =>
+                        deleteStory(
+                          story.id
+                        )
+                      }
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
-
-              </div>
-
-
-              <div className="story-data">
-                {story.category}
-              </div>
-
-
-              <div>
-
-                <span
-                  className={`status ${
-                    story.status === "Published"
-                      ? "published"
-                      : "draft"
-                  }`}
-                >
-                  {story.status}
-                </span>
-
-              </div>
-
-
-              <div>
-
-                <button
-                  className={`featured-button ${
-                    story.featured
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() =>
-                    toggleFeatured(story.id)
-                  }
-                >
-                  ★
-                </button>
-
-              </div>
-
-
-              <div className="story-actions">
-
-                <button
-                  className="small-action"
-                  title="Edit"
-                >
-                  ✎
-                </button>
-
-                <button
-                  className="small-action delete"
-                  title="Delete"
-                  onClick={() =>
-                    deleteStory(story.id)
-                  }
-                >
-                  ×
-                </button>
-
-              </div>
-
-            </div>
-
-          ))}
-
-
-          {filteredStories.length === 0 && (
-
-            <div className="empty-state">
-              No stories found.
-            </div>
-
-          )}
-
-        </div>
-
+              )
+            )}
+          </div>
+        )}
       </div>
 
-
-      {showModal && (
-
-        <div
-          className="modal-overlay"
-          onClick={() =>
-            setShowModal(false)
+      {showAdd && (
+        <Modal
+          title="Add Story"
+          onClose={() =>
+            setShowAdd(false)
           }
         >
-
-          <div
-            className="modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
+          <form
+            className="form"
+            onSubmit={addLocalStory}
           >
-
-            <div className="modal-header">
-
-              <div>
-
-                <h2>
-                  Add New Story
-                </h2>
-
-                <p>
-                  Create a new Media TV story.
-                </p>
-
-              </div>
-
-
-              <button
-                className="modal-close"
-                onClick={() =>
-                  setShowModal(false)
-                }
-              >
-                ×
-              </button>
-
-            </div>
-
-
-            <form onSubmit={createStory}>
-
-              <label>
-                Story Title
-              </label>
-
+            <label>
+              Story title
               <input
-                className="form-input"
-                value={form.title}
+                value={newStory.title}
                 onChange={(event) =>
-                  setForm({
-                    ...form,
-                    title: event.target.value
+                  setNewStory({
+                    ...newStory,
+                    title:
+                      event.target.value
                   })
                 }
                 placeholder="Enter story title"
               />
+            </label>
 
-
-              <label>
-                Description
-              </label>
-
-              <textarea
-                className="form-input textarea"
-                value={form.description}
+            <label>
+              Category
+              <input
+                value={newStory.category}
                 onChange={(event) =>
-                  setForm({
-                    ...form,
+                  setNewStory({
+                    ...newStory,
+                    category:
+                      event.target.value
+                  })
+                }
+                placeholder="Drama"
+              />
+            </label>
+
+            <label>
+              Description
+              <textarea
+                value={
+                  newStory.description
+                }
+                onChange={(event) =>
+                  setNewStory({
+                    ...newStory,
                     description:
                       event.target.value
                   })
                 }
                 placeholder="Story description"
+                rows="4"
               />
+            </label>
 
-
-              <label>
-                Category
-              </label>
-
-              <select
-                className="form-input"
-                value={form.category}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    category:
-                      event.target.value
-                  })
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() =>
+                  setShowAdd(false)
                 }
               >
-                <option>Drama</option>
-                <option>Romance</option>
-                <option>Mystery</option>
-                <option>Thriller</option>
-                <option>Comedy</option>
-                <option>Action</option>
-                <option>Horror</option>
-              </select>
+                Cancel
+              </button>
 
-
-              <label>
-                Thumbnail URL
-              </label>
-
-              <input
-                className="form-input"
-                value={form.thumbnail}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    thumbnail:
-                      event.target.value
-                  })
-                }
-                placeholder="https://..."
-              />
-
-
-              <label>
-                Status
-              </label>
-
-              <select
-                className="form-input"
-                value={form.status}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    status:
-                      event.target.value
-                  })
-                }
+              <button
+                type="submit"
+                className="primary-button"
               >
-                <option>Draft</option>
-                <option>Published</option>
-              </select>
+                Add Story
+              </button>
+            </div>
 
-
-              <label className="checkbox-row">
-
-                <input
-                  type="checkbox"
-                  checked={form.featured}
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      featured:
-                        event.target.checked
-                    })
-                  }
-                />
-
-                <span>
-                  Featured story
-                </span>
-
-              </label>
-
-
-              <div className="modal-actions">
-
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() =>
-                    setShowModal(false)
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="primary-button"
-                >
-                  Create Story
-                </button>
-
-              </div>
-
-            </form>
-
-          </div>
-
-        </div>
-
+            <p className="form-note">
+              This button currently adds the
+              story to the admin interface only.
+              Permanent CRUD will be connected
+              after the backend POST endpoint is
+              added.
+            </p>
+          </form>
+        </Modal>
       )}
-
     </section>
   );
 }
 
-
-/* ============================================
-   EPISODES MANAGER
-============================================ */
-
-function EpisodesManager() {
-
+function EpisodesManager({
+  stories
+}) {
   const [selectedStory, setSelectedStory] =
-    useState("The Last Letter");
+    useState(
+      stories[0]?.id || ""
+    );
 
-  const [episodes, setEpisodes] = useState([
-    {
-      id: 1,
-      number: 1,
-      title: "The Beginning",
-      duration: "08:42",
-      status: "Published"
-    },
-    {
-      id: 2,
-      number: 2,
-      title: "The Letter",
-      duration: "10:15",
-      status: "Published"
-    },
-    {
-      id: 3,
-      number: 3,
-      title: "The Secret",
-      duration: "11:08",
-      status: "Draft"
-    }
-  ]);
+  const [episodes, setEpisodes] =
+    useState([]);
 
-  const [showModal, setShowModal] =
+  const [loading, setLoading] =
     useState(false);
 
-  const [form, setForm] = useState({
-    number: "",
-    title: "",
-    description: "",
-    videoUrl: "",
-    thumbnail: "",
-    duration: "",
-    status: "Draft"
-  });
-
-
-  function createEpisode(event) {
-
-    event.preventDefault();
-
+  useEffect(() => {
     if (
-      !form.title.trim() ||
-      !form.number
+      selectedStory
     ) {
-      return;
+      loadEpisodes(
+        selectedStory
+      );
     }
+  }, [selectedStory]);
 
-    setEpisodes([
-      ...episodes,
-      {
-        id: Date.now(),
-        number: Number(form.number),
-        title: form.title,
-        duration:
-          form.duration || "--:--",
-        status: form.status
-      }
-    ]);
+  async function loadEpisodes(
+    storyId
+  ) {
+    setLoading(true);
 
-    setForm({
-      number: "",
-      title: "",
-      description: "",
-      videoUrl: "",
-      thumbnail: "",
-      duration: "",
-      status: "Draft"
-    });
+    try {
+      const data =
+        await getEpisodes(
+          storyId
+        );
 
-    setShowModal(false);
-  }
-
-
-  function deleteEpisode(id) {
-
-    const confirmed =
-      window.confirm(
-        "Delete this episode?"
+      setEpisodes(
+        Array.isArray(data)
+          ? data
+          : []
+      );
+    } catch (error) {
+      console.error(
+        "Episodes API error:",
+        error
       );
 
-    if (!confirmed) {
-      return;
+      setEpisodes([]);
+    } finally {
+      setLoading(false);
     }
-
-    setEpisodes(
-      episodes.filter(
-        (episode) =>
-          episode.id !== id
-      )
-    );
   }
-
 
   return (
     <section className="page">
-
-      <div className="page-heading">
-
+      <div className="page-toolbar">
         <div>
+          <span className="panel-kicker">
+            CONTENT MANAGEMENT
+          </span>
 
-          <h1>Episodes</h1>
+          <h2>
+            Episodes
+          </h2>
 
           <p>
-            Manage episodes and streaming videos.
+            Episodes are loaded from the
+            Media TV backend.
           </p>
-
         </div>
-
 
         <button
           className="primary-button"
-          onClick={() =>
-            setShowModal(true)
-          }
+          disabled={!selectedStory}
         >
           + Add Episode
         </button>
-
       </div>
 
+      <div className="episode-selector">
+        <label>
+          Select Story
+        </label>
 
-      <div className="panel">
-
-        <div className="panel-header">
-
-          <div>
-
-            <h2>
-              Episode Manager
-            </h2>
-
-            <p>
-              Select a story to manage episodes.
-            </p>
-
-          </div>
-
-
-          <select
-            className="form-input story-select"
-            value={selectedStory}
-            onChange={(event) =>
-              setSelectedStory(
-                event.target.value
-              )
-            }
-          >
-            <option>
-              The Last Letter
-            </option>
-
-            <option>
-              Midnight Secret
-            </option>
-
-            <option>
-              Broken Promise
-            </option>
-          </select>
-
-        </div>
-
-
-        <div className="episode-list">
-
-          {episodes.map((episode) => (
-
-            <div
-              className="episode-row"
-              key={episode.id}
-            >
-
-              <div className="episode-number">
-                {String(
-                  episode.number
-                ).padStart(2, "0")}
-              </div>
-
-
-              <div className="episode-info">
-
-                <strong>
-                  {episode.title}
-                </strong>
-
-                <span>
-                  Episode {episode.number}
-                </span>
-
-              </div>
-
-
-              <div className="episode-duration">
-                {episode.duration}
-              </div>
-
-
-              <span
-                className={`status ${
-                  episode.status ===
-                  "Published"
-                    ? "published"
-                    : "draft"
-                }`}
-              >
-                {episode.status}
-              </span>
-
-
-              <div className="story-actions">
-
-                <button
-                  className="small-action"
-                  title="Edit"
-                >
-                  ✎
-                </button>
-
-                <button
-                  className="small-action delete"
-                  title="Delete"
-                  onClick={() =>
-                    deleteEpisode(
-                      episode.id
-                    )
-                  }
-                >
-                  ×
-                </button>
-
-              </div>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
-
-
-      <div className="info-card">
-
-        <div className="info-icon">
-          ▶
-        </div>
-
-        <div>
-
-          <strong>
-            Video streaming
-          </strong>
-
-          <p>
-            Media TV supports HLS video
-            streams using .m3u8 URLs.
-            Upload your video to a
-            compatible storage/CDN and
-            paste the stream URL here.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      {showModal && (
-
-        <div
-          className="modal-overlay"
-          onClick={() =>
-            setShowModal(false)
+        <select
+          value={selectedStory}
+          onChange={(event) =>
+            setSelectedStory(
+              event.target.value
+            )
           }
         >
-
-          <div
-            className="modal"
-            onClick={(event) =>
-              event.stopPropagation()
-            }
-          >
-
-            <div className="modal-header">
-
-              <div>
-
-                <h2>
-                  Add Episode
-                </h2>
-
-                <p>
-                  Add an episode to {selectedStory}.
-                </p>
-
-              </div>
-
-
-              <button
-                className="modal-close"
-                onClick={() =>
-                  setShowModal(false)
-                }
+          {stories.map(
+            (story) => (
+              <option
+                key={story.id}
+                value={story.id}
               >
-                ×
-              </button>
+                {story.title}
+              </option>
+            )
+          )}
+        </select>
+      </div>
 
-            </div>
-
-
-            <form onSubmit={createEpisode}>
-
-              <label>
-                Episode Number
-              </label>
-
-              <input
-                className="form-input"
-                type="number"
-                min="1"
-                value={form.number}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    number:
-                      event.target.value
-                  })
-                }
-                placeholder="1"
-              />
-
-
-              <label>
-                Episode Title
-              </label>
-
-              <input
-                className="form-input"
-                value={form.title}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    title:
-                      event.target.value
-                  })
-                }
-                placeholder="Episode title"
-              />
-
-
-              <label>
-                Description
-              </label>
-
-              <textarea
-                className="form-input textarea"
-                value={form.description}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    description:
-                      event.target.value
-                  })
-                }
-                placeholder="Episode description"
-              />
-
-
-              <label>
-                Video URL
-              </label>
-
-              <input
-                className="form-input"
-                value={form.videoUrl}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    videoUrl:
-                      event.target.value
-                  })
-                }
-                placeholder="https://.../video.m3u8"
-              />
-
-
-              <label>
-                Thumbnail URL
-              </label>
-
-              <input
-                className="form-input"
-                value={form.thumbnail}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    thumbnail:
-                      event.target.value
-                  })
-                }
-                placeholder="https://..."
-              />
-
-
-              <label>
-                Duration
-              </label>
-
-              <input
-                className="form-input"
-                value={form.duration}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    duration:
-                      event.target.value
-                  })
-                }
-                placeholder="10:30"
-              />
-
-
-              <label>
-                Status
-              </label>
-
-              <select
-                className="form-input"
-                value={form.status}
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    status:
-                      event.target.value
-                  })
-                }
-              >
-                <option>
-                  Draft
-                </option>
-
-                <option>
-                  Published
-                </option>
-              </select>
-
-
-              <div className="modal-actions">
-
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() =>
-                    setShowModal(false)
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="primary-button"
-                >
-                  Add Episode
-                </button>
-
-              </div>
-
-            </form>
-
+      <div className="episodes-grid">
+        {loading ? (
+          <div className="empty-state large">
+            Loading episodes...
           </div>
+        ) : episodes.length === 0 ? (
+          <div className="empty-state large">
+            No episodes found.
+          </div>
+        ) : (
+          episodes.map(
+            (episode) => (
+              <div
+                className="episode-card"
+                key={episode.id}
+              >
+                <div className="episode-number">
+                  {String(
+                    episode.episode_number
+                  ).padStart(2, "0")}
+                </div>
 
-        </div>
+                <div className="episode-info">
+                  <span>
+                    EPISODE{" "}
+                    {episode.episode_number}
+                  </span>
 
-      )}
+                  <h3>
+                    {episode.title}
+                  </h3>
 
+                  <p>
+                    {episode.description}
+                  </p>
+
+                  <div className="episode-meta">
+                    <span>
+                      ⏱{" "}
+                      {formatDuration(
+                        episode.duration_seconds
+                      )}
+                    </span>
+
+                    <span>
+                      ▶ Video ready
+                    </span>
+                  </div>
+                </div>
+
+                <button className="small-button">
+                  →
+                </button>
+              </div>
+            )
+          )
+        )}
+      </div>
     </section>
   );
 }
-
-
-/* ============================================
-   ANALYTICS
-============================================ */
 
 function Analytics() {
-
   return (
     <section className="page">
-
-      <div className="page-heading">
-
+      <div className="page-toolbar">
         <div>
+          <span className="panel-kicker">
+            PLATFORM INSIGHTS
+          </span>
 
-          <h1>Analytics</h1>
+          <h2>
+            Analytics
+          </h2>
 
           <p>
-            Track Media TV performance.
+            Analytics infrastructure is ready
+            for watch and user events.
           </p>
-
         </div>
-
       </div>
 
-
-      <div className="stats-grid">
-
-        <div className="stat-card">
-          <span className="stat-title">
-            Daily Views
+      <div className="analytics-grid">
+        <div className="analytics-card">
+          <span>
+            TOTAL VIEWS
           </span>
-
-          <strong className="stat-value">
-            42.8K
-          </strong>
-
-          <span className="stat-change">
-            +14.8%
-          </span>
+          <strong>0</strong>
+          <small>
+            Waiting for viewing events
+          </small>
         </div>
 
-
-        <div className="stat-card">
-          <span className="stat-title">
-            Avg. Watch Time
+        <div className="analytics-card">
+          <span>
+            WATCH TIME
           </span>
-
-          <strong className="stat-value">
-            18m 42s
-          </strong>
-
-          <span className="stat-change">
-            +8.2%
-          </span>
+          <strong>0h</strong>
+          <small>
+            Waiting for watch history
+          </small>
         </div>
 
-
-        <div className="stat-card">
-          <span className="stat-title">
-            Completion Rate
+        <div className="analytics-card">
+          <span>
+            ACTIVE USERS
           </span>
-
-          <strong className="stat-value">
-            74.6%
-          </strong>
-
-          <span className="stat-change">
-            +5.7%
-          </span>
+          <strong>0</strong>
+          <small>
+            User system not activated
+          </small>
         </div>
-
-
-        <div className="stat-card">
-          <span className="stat-title">
-            Returning Users
-          </span>
-
-          <strong className="stat-value">
-            68.2%
-          </strong>
-
-          <span className="stat-change">
-            +11.1%
-          </span>
-        </div>
-
       </div>
 
-    </section>
-  );
-}
-
-
-/* ============================================
-   SIMPLE PAGE
-============================================ */
-
-function SimplePage({
-  title,
-  description
-}) {
-
-  return (
-    <section className="page">
-
-      <div className="page-heading">
-
-        <div>
-
-          <h1>{title}</h1>
-
-          <p>{description}</p>
-
-        </div>
-
-      </div>
-
-
-      <div className="panel">
-
-        <div className="empty-state">
-
-          <div className="empty-icon">
-            ◈
-          </div>
-
-          <h3>
-            {title}
-          </h3>
-
-          <p>
-            This section is ready for
-            backend integration.
-          </p>
-
-        </div>
-
-      </div>
-
-    </section>
-  );
-}
-
-
-/* ============================================
-   ACTIVITY
-============================================ */
-
-function Activity({
-  title,
-  subtitle,
-  time
-}) {
-
-  return (
-    <div className="activity-item">
-
-      <div className="activity-dot" />
-
-      <div className="activity-content">
-
-        <strong>
-          {title}
-        </strong>
-
-        <span>
-          {subtitle}
+      <div className="panel-card chart-placeholder">
+        <span className="panel-kicker">
+          PERFORMANCE
         </span>
 
+        <h3>
+          Viewing activity
+        </h3>
+
+        <div className="fake-chart">
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
       </div>
+    </section>
+  );
+}
 
-      <time>
-        {time}
-      </time>
+function PlaceholderPage({
+  title,
+  description,
+  icon
+}) {
+  return (
+    <section className="page">
+      <div className="placeholder-card">
+        <div className="placeholder-icon">
+          {icon}
+        </div>
 
+        <span className="panel-kicker">
+          MEDIA TV ADMIN
+        </span>
+
+        <h2>{title}</h2>
+
+        <p>
+          {description}
+        </p>
+
+        <span className="coming-badge">
+          MODULE READY
+        </span>
+      </div>
+    </section>
+  );
+}
+
+function StoryThumb({
+  story
+}) {
+  if (
+    story.thumbnail_url
+  ) {
+    return (
+      <img
+        className="story-thumb"
+        src={story.thumbnail_url}
+        alt={story.title}
+      />
+    );
+  }
+
+  return (
+    <div className="story-thumb fallback">
+      ▶
     </div>
   );
 }
 
+function Modal({
+  title,
+  children,
+  onClose
+}) {
+  return (
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+    >
+      <div
+        className="modal-box"
+        onClick={(event) =>
+          event.stopPropagation()
+        }
+      >
+        <div className="modal-header">
+          <h3>{title}</h3>
+
+          <button
+            className="modal-close"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function formatDuration(
+  seconds
+) {
+  const value =
+    Number(seconds) || 0;
+
+  if (value <= 0) {
+    return "--:--";
+  }
+
+  const minutes =
+    Math.floor(value / 60);
+
+  const remaining =
+    value % 60;
+
+  return `${String(minutes).padStart(
+    2,
+    "0"
+  )}:${String(remaining).padStart(
+    2,
+    "0"
+  )}`;
+}
 
 export default App;
