@@ -7,7 +7,9 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(
+        RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    )
 
     repositories {
         google()
@@ -15,6 +17,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "StoryTV"
+rootProject.name = "Media-TV"
 
 include(":app")
