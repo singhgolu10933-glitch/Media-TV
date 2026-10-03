@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Media TV Background -->
+    <color name="media_background">#07070A</color>
+    <color name="media_surface">#111116</color>
+    <color name="media_card">#18181F</color>
+
+    <!-- Brand -->
+    <color name="media_primary">#8B5CF6</color>
+    <color name="media_primary_light">#A78BFA</color>
+    <color name="media_primary_dark">#6D28D9</color>
+
+    <!-- Text -->
+    <color name="media_text_primary">#F7F7F8</color>
+    <color name="media_text_secondary">#9999A5</color>
+    <color name="media_text_muted">#666672</color>
+
+    <!-- Status -->
+    <color name="media_success">#22C55E</color>
+    <color name="media_warning">#F59E0B</color>
+    <color name="media_error">#EF4444</color>
+
+    <!-- Navigation -->
+    <color name="media_navigation">#07070A</color>
+    <color name="media_status_bar">#07070A</color>
+
+    <!-- Common -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+</resources>
